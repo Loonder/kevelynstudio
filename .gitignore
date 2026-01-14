@@ -39,3 +39,32 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# --- LOCAL/CUSTOM IGNORES ---
+
+# Logs and Error dumps
+*.log
+tsc_errors*
+lint-*
+lint-report*
+
+# Backups
+*.zip
+*_backup*
+
+# Database Scratch Files & SQL Dumps
+supabase_*.sql
+*.sqlite
+dump.rdb
+
+# One-off scripts (keep src/scripts, ignore root scripts)
+apply-schema.ts
+check-db.ts
+test-connection.ts
+seed.ts
+
+# Transient Documentation
+RESTART_INSTRUCTIONS.md
+DATABASE_RESET_GUIDE.md
+DEBUG_CONNECTION.md
+# Keeping README.md and PROJECT_OVERVIEW.md as they are usually valuable for the repo
