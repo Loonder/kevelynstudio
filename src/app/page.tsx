@@ -1,65 +1,84 @@
-import Image from "next/image";
+import { Suspense } from "react";
+import dynamic from 'next/dynamic';
 
-export default function Home() {
+// Componentes Críticos (Carregamento Imediato)
+// Mantemos estáticos para garantir LCP (Largest Contentful Paint) rápido
+import { NavBar } from "@/components/layout/nav-bar";
+import { Footer } from "@/components/layout/footer";
+import { HeroCinematic } from "@/components/sections/hero-cinematic";
+import { BrandManifesto } from "@/components/sections/brand-manifesto";
+import { WhatsAppBubble } from "@/components/ui/whatsapp-bubble";
+
+// Componentes "Abaixo da Dobra" (Carregamento Sob Demanda)
+// Otimização: Adicionei ssr: true (padrão) mas com loading states visuais melhores
+const ServicesList = dynamic(() => import("@/components/sections/services-list").then(mod => mod.ServicesList), {
+  loading: () => <SectionSkeleton height="h-[600px]" />
+});
+
+const StudioGallery = dynamic(() => import("@/components/sections/studio-gallery").then(mod => mod.StudioGallery), {
+  loading: () => <SectionSkeleton height="h-[500px]" />
+});
+
+const AcademyPromo = dynamic(() => import("@/components/sections/academy-promo").then(mod => mod.AcademyPromo));
+const ResultsSection = dynamic(() => import("@/components/features/results/results-section").then(mod => mod.ResultsSection));
+const TeamEditorial = dynamic(() => import("@/components/sections/team-editorial").then(mod => mod.TeamEditorial));
+const FAQSection = dynamic(() => import("@/components/sections/faq-section").then(mod => mod.FAQSection));
+const MethodologySectionWrapper = dynamic(() => import("@/components/sections/methodology-wrapper").then(mod => mod.MethodologySectionWrapper));
+const ContactSection = dynamic(() => import("@/components/sections/contact-section").then(mod => mod.ContactSection));
+const BlogPreview = dynamic(() => import("@/components/sections/blog-preview").then(mod => mod.BlogPreview));
+const TestimonialsEditorial = dynamic(() => import("@/components/sections/testimonials-editorial").then(mod => mod.TestimonialsEditorial));
+
+// Skeleton Reutilizável para evitar Layout Shift (CLS)
+const SectionSkeleton = ({ height }: { height: string }) => (
+  <div className={`w-full ${height} bg-neutral-900/50 animate-pulse border-y border-white/5`} />
+);
+
+export default async function Home() {
+  // DICA DE OURO: Se os componentes abaixo buscam dados do DB, 
+  // o ideal seria buscar TUDO aqui em paralelo (Promise.all) e passar via props.
+  // Por enquanto, mantive a estrutura original para não quebrar sua lógica interna.
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+    <>
+      <NavBar />
+      <WhatsAppBubble />
+
+      <main className="min-h-screen bg-background selection:bg-primary/30">
+        {/* Renderização Prioritária (Acima da dobra) */}
+        <HeroCinematic />
+        <BrandManifesto />
+
+        {/* Renderização Progressiva (Abaixo da dobra) */}
+        <div className="flex flex-col gap-0">
+          <Suspense fallback={<SectionSkeleton height="h-[600px]" />}>
+            <ServicesList />
+          </Suspense>
+
+          <ResultsSection />
+          <AcademyPromo />
+          <TeamEditorial />
+          <StudioGallery />
+
+          <Suspense fallback={
+            <div className="py-32 flex flex-col items-center justify-center bg-[#050505]">
+              <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mb-4" />
+              <p className="text-white/20 text-xs tracking-widest uppercase">Carregando Metodologia...</p>
+            </div>
+          }>
+            <MethodologySectionWrapper />
+          </Suspense>
+
+          <Suspense fallback={<SectionSkeleton height="h-[400px]" />}>
+            <BlogPreview />
+          </Suspense>
+
+          <TestimonialsEditorial />
+          <ContactSection />
+          <FAQSection />
         </div>
       </main>
-    </div>
+
+      <Footer />
+    </>
   );
 }
