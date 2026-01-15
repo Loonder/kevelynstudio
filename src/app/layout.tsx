@@ -20,8 +20,29 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Kevelyn Studio | Excellence in Beauty",
-  description: "Premium Lash & Brow Design Studio. Experience the art of beauty.",
+  title: "Kevelyn Studio | Especialista em Olhar e Lábios",
+  description: "Realce sua beleza natural com procedimentos de alto padrão. Micropigmentação, Lash Lifting, Brow Lamination e mais.",
+  icons: {
+    icon: "/favicon.png", // Fallback
+    shortcut: "/favicon.png",
+    apple: "/favicon.png",
+  },
+  openGraph: {
+    title: "Kevelyn Studio | Especialista em Olhar e Lábios",
+    description: "Realce sua beleza natural com procedimentos de alto padrão.",
+    url: "https://kevelynstudio.paulomoraes.cloud",
+    siteName: "Kevelyn Studio",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Kevelyn Studio Banner",
+      },
+    ],
+    locale: "pt_BR",
+    type: "website",
+  },
 };
 
 export default function RootLayout({

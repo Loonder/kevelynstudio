@@ -52,9 +52,14 @@ const sidebarItems = [
     },
 ];
 
-export function AdminSidebar() {
+interface AdminSidebarProps {
+    className?: string; // Allow overriding fixed positioning
+    onClose?: () => void; // For mobile menu closing
+}
+
+export function AdminSidebar({ className, onClose }: AdminSidebarProps) {
     return (
-        <aside className="w-64 bg-[#050505] border-r border-white/10 flex flex-col h-screen fixed left-0 top-0 z-50">
+        <aside className={cn("w-64 bg-[#050505] border-r border-white/10 flex flex-col h-screen", className || "fixed left-0 top-0 z-50")}>
             <div className="p-6">
                 <h1 className="text-2xl font-serif text-white tracking-widest">
                     KEVELYN<span className="text-primary">.</span>
@@ -63,7 +68,7 @@ export function AdminSidebar() {
             </div>
 
             <nav className="flex-1 px-4 space-y-2 py-4">
-                <SidebarNav />
+                <SidebarNav onClose={onClose} />
             </nav>
 
             <div className="p-4 border-t border-white/10">
@@ -82,7 +87,7 @@ export function AdminSidebar() {
     );
 }
 
-function SidebarNav() {
+function SidebarNav({ onClose }: { onClose?: () => void }) {
     const pathname = usePathname();
     const [mounted, setMounted] = useState(false);
 
@@ -105,6 +110,7 @@ function SidebarNav() {
                     <Link
                         key={item.href}
                         href={item.href}
+                        onClick={onClose}
                         className={cn(
                             "flex items-center gap-3 px-4 py-3 rounded-md transition-all duration-300 group relative overflow-hidden",
                             isActive

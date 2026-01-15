@@ -4,6 +4,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { BackButton } from "@/components/ui/back-button";
 
 
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Menu } from "lucide-react";
+
 export default function AdminLayout({
     children,
 }: {
@@ -12,7 +15,7 @@ export default function AdminLayout({
     return (
         // ADICIONADO: 'selection:bg-primary/30' para a cor de seleção do texto ficar na marca
         // REMOVIDO: 'select-none' para permitir copiar dados
-        <div className="min-h-screen bg-[#050505] text-white flex relative overflow-x-hidden selection:bg-primary/30 selection:text-white">
+        <div className="min-h-screen bg-[#050505] text-white flex flex-col md:flex-row relative overflow-x-hidden selection:bg-primary/30 selection:text-white">
             <Toaster richColors position="top-right" theme="dark" />
 
             {/* --- AMBIENT BACKGROUND (Otimizado para GPU) --- */}
@@ -22,9 +25,25 @@ export default function AdminLayout({
                 <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary/5 blur-[120px] rounded-full opacity-40 will-change-transform translate-z-0" />
             </div>
 
-            {/* --- SIDEBAR (Fixa & Premium) --- */}
+            {/* --- MOBILE HEADER --- */}
+            <div className="md:hidden sticky top-0 z-40 w-full bg-[#050505]/80 backdrop-blur border-b border-white/5 p-4 flex items-center justify-between">
+                <span className="font-serif text-lg tracking-widest text-[#D4AF37]">KEVELYN<span className="text-white">.</span></span>
+                <Sheet>
+                    <SheetTrigger asChild>
+                        <button className="text-white p-2">
+                            <Menu className="w-6 h-6" />
+                        </button>
+                    </SheetTrigger>
+                    <SheetContent side="left" className="p-0 border-r border-white/10 bg-[#050505] w-64">
+                        {/* Pass className="relative" to override fixed positioning */}
+                        <AdminSidebar className="relative w-full h-full" />
+                    </SheetContent>
+                </Sheet>
+            </div>
+
+            {/* --- SIDEBAR (Desktop) --- */}
             {/* Adicionei 'border-r' e 'backdrop-blur' para o efeito vidro */}
-            <div className="hidden md:block fixed inset-y-0 left-0 z-50 w-72 border-r border-white/5 bg-[#050505]/50 backdrop-blur-xl">
+            <div className="hidden md:block fixed inset-y-0 left-0 z-50 w-64 border-r border-white/5 bg-[#050505]/50 backdrop-blur-xl">
                 {/* AQUI ESTÁ O SCROLLAREA: Garante rolagem elegante no menu */}
                 <ScrollArea className="h-full">
                     <AdminSidebar />
@@ -32,9 +51,9 @@ export default function AdminLayout({
             </div>
 
             {/* --- CONTEÚDO PRINCIPAL --- */}
-            {/* md:ml-72 empurra o conteúdo só no desktop. No mobile fica tela cheia. */}
-            <main className="flex-1 md:ml-64 min-h-screen relative z-10 transition-all duration-300"> {/* Changing md:ml-72 to md:ml-64 to match sidebar width of w-64 */}
-                <div className="space-y-6 p-8 pt-6 md:p-8 max-w-[1600px] mx-auto text-white relative">
+            {/* md:ml-64 empurra o conteúdo só no desktop. No mobile fica tela cheia (ml-0 default). */}
+            <main className="flex-1 md:ml-64 min-h-screen relative z-10 transition-all duration-300">
+                <div className="space-y-6 p-4 md:p-8 max-w-[1600px] mx-auto text-white relative">
                     <BackButton />
                     {children}
                 </div>
