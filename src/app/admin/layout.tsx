@@ -1,6 +1,8 @@
 import { AdminSidebar } from "@/components/admin/sidebar";
 import { Toaster } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { BackButton } from "@/components/ui/back-button";
+
 
 export default function AdminLayout({
     children,
@@ -31,10 +33,9 @@ export default function AdminLayout({
 
             {/* --- CONTEÚDO PRINCIPAL --- */}
             {/* md:ml-72 empurra o conteúdo só no desktop. No mobile fica tela cheia. */}
-            {/* --- CONTEÚDO PRINCIPAL --- */}
-            {/* md:ml-72 empurra o conteúdo só no desktop. No mobile fica tela cheia. */}
             <main className="flex-1 md:ml-64 min-h-screen relative z-10 transition-all duration-300"> {/* Changing md:ml-72 to md:ml-64 to match sidebar width of w-64 */}
-                <div className="space-y-6 p-8 pt-6 md:p-8 max-w-[1600px] mx-auto text-white">
+                <div className="space-y-6 p-8 pt-6 md:p-8 max-w-[1600px] mx-auto text-white relative">
+                    <BackButton />
                     {children}
                 </div>
             </main>

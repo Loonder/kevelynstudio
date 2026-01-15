@@ -1,17 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Modal } from "@/components/ui/modal";
-import { Calendar, Clock, User, Scissors, CheckCircle2 } from "lucide-react";
+import { Calendar, Clock, User, Scissors, CheckCircle2, ArrowRight } from "lucide-react";
 import { createAppointment } from "@/actions/calendar-actions";
 import { Professional } from "./smart-calendar";
-import { addMinutes, format } from "date-fns";
+import { addMinutes, format, differenceInMinutes } from "date-fns";
 import { toast } from "sonner";
 
 interface CreateAppointmentModalProps {
     isOpen: boolean;
     onClose: () => void;
     preselectedDate?: Date | null;
+    preselectedEndDate?: Date | null;
     professionals: Professional[];
     services: any[];
     clients: any[];
@@ -22,6 +23,7 @@ export function CreateAppointmentModal({
     isOpen,
     onClose,
     preselectedDate,
+    preselectedEndDate,
     professionals,
     services,
     clients,
@@ -31,7 +33,36 @@ export function CreateAppointmentModal({
     const [clientId, setClientId] = useState("");
     const [professionalId, setProfessionalId] = useState("");
     const [serviceId, setServiceId] = useState("");
-    const [time, setTime] = useState(preselectedDate ? format(preselectedDate, "HH:mm") : "09:00");
+    const [startTime, setStartTime] = useState(preselectedDate ? format(preselectedDate, "HH:mm") : "09:00");
+    const [endTime, setEndTime] = useState(preselectedEndDate ? format(preselectedEndDate, "HH:mm") : "10:00");
+    const [selectedDuration, setSelectedDuration] = useState<number | null>(null);
+
+    // Update times when preselected dates change
+    useEffect(() => {
+        if (preselectedDate) {
+            setStartTime(format(preselectedDate, "HH:mm"));
+        }
+        if (preselectedEndDate) {
+            setEndTime(format(preselectedEndDate, "HH:mm"));
+            if (preselectedDate && preselectedEndDate) {
+                setSelectedDuration(differenceInMinutes(preselectedEndDate, preselectedDate));
+            }
+        }
+    }, [preselectedDate, preselectedEndDate]);
+
+    // When service is selected, update end time based on service duration
+    useEffect(() => {
+        if (serviceId && !selectedDuration) {
+            const service = services.find(s => s.id === serviceId);
+            if (service) {
+                const [hours, minutes] = startTime.split(':').map(Number);
+                const start = new Date();
+                start.setHours(hours, minutes, 0, 0);
+                const end = addMinutes(start, service.durationMinutes || 60);
+                setEndTime(format(end, "HH:mm"));
+            }
+        }
+    }, [serviceId, startTime, services, selectedDuration]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -40,14 +71,14 @@ export function CreateAppointmentModal({
         try {
             if (!preselectedDate) return;
 
-            const service = services.find(s => s.id === serviceId);
-            if (!service) return;
+            const [startHours, startMinutes] = startTime.split(':').map(Number);
+            const [endHours, endMinutes] = endTime.split(':').map(Number);
 
-            const [hours, minutes] = time.split(':').map(Number);
             const start = new Date(preselectedDate);
-            start.setHours(hours, minutes, 0, 0);
+            start.setHours(startHours, startMinutes, 0, 0);
 
-            const end = addMinutes(start, service.durationMinutes || 60);
+            const end = new Date(preselectedDate);
+            end.setHours(endHours, endMinutes, 0, 0);
 
             const res = await createAppointment({
                 clientId,
@@ -148,15 +179,27 @@ export function CreateAppointmentModal({
                     {/* Time Input */}
                     <div>
                         <label className="text-xs text-white/40 uppercase font-bold mb-1.5 block ml-1">Horário</label>
-                        <div className="relative">
-                            <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                            <input
-                                type="time"
-                                required
-                                value={time}
-                                onChange={e => setTime(e.target.value)}
-                                className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:border-primary/50 transition-colors"
-                            />
+                        <div className="flex items-center gap-2">
+                            <div className="relative flex-1">
+                                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                                <input
+                                    type="time"
+                                    required
+                                    value={startTime}
+                                    onChange={e => setStartTime(e.target.value)}
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:border-primary/50 transition-colors"
+                                />
+                            </div>
+                            <ArrowRight className="w-4 h-4 text-white/30" />
+                            <div className="relative flex-1">
+                                <input
+                                    type="time"
+                                    required
+                                    value={endTime}
+                                    onChange={e => setEndTime(e.target.value)}
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-primary/50 transition-colors"
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>

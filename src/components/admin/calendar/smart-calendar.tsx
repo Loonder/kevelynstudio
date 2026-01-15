@@ -145,7 +145,8 @@ const WeekGrid = ({
     onDragStart,
     onDrop,
     onSelectAppointment,
-    onClickDay
+    onClickDay,
+    zoomLevel
 }: {
     currentDate: Date;
     appointments: Appointment[];
@@ -153,6 +154,7 @@ const WeekGrid = ({
     onDrop: (e: React.DragEvent, day: Date, hour: number) => void;
     onSelectAppointment: (appt: Appointment) => void;
     onClickDay: (date: Date) => void;
+    zoomLevel: number;
 }) => {
     const { weekDays, hours } = useMemo(() => {
         const weekStart = startOfWeek(currentDate);
@@ -162,13 +164,16 @@ const WeekGrid = ({
         };
     }, [currentDate]);
 
+    // Calculate dynamic height based on zoom (1=80px, 2=120px, 3=180px)
+    const slotHeight = zoomLevel === 1 ? 80 : zoomLevel === 2 ? 120 : 180;
+
     return (
-        <div className="flex flex-col h-full bg-[#0A0A0A] rounded-2xl border border-white/5 overflow-hidden">
+        <div className="flex flex-col h-full bg-[#050505] rounded-2xl border border-white/10 overflow-hidden">
             {/* Header */}
-            <div className="flex border-b border-white/5 bg-white/[0.02]">
-                <div className="w-16 flex-shrink-0 border-r border-white/5" />
+            <div className="flex border-b border-white/10 bg-white/[0.02]">
+                <div className="w-16 flex-shrink-0 border-r border-white/10" />
                 {weekDays.map(day => (
-                    <div key={day.toISOString()} className={cn("flex-1 py-4 text-center border-r border-white/5", isToday(day) && "bg-primary/5")}>
+                    <div key={day.toISOString()} className={cn("flex-1 py-4 text-center border-r border-white/10", isToday(day) && "bg-primary/5")}>
                         <div className="text-xs text-white/40 uppercase mb-1">{format(day, 'EEE', { locale: ptBR })}</div>
                         <div className={cn("text-xl font-serif", isToday(day) ? "text-primary" : "text-white")}>{format(day, 'd')}</div>
                     </div>
@@ -178,9 +183,9 @@ const WeekGrid = ({
             {/* Body */}
             <div className="flex-1 overflow-y-auto custom-scrollbar">
                 {hours.map(hour => (
-                    <div key={hour} className="flex min-h-[100px] border-b border-white/5 relative">
+                    <div key={hour} className="flex border-b border-white/10 relative" style={{ minHeight: slotHeight }}>
                         {/* Time Label */}
-                        <div className="w-16 flex-shrink-0 border-r border-white/5 p-3 text-xs text-white/30 font-mono text-right sticky left-0 bg-[#0A0A0A] z-10">
+                        <div className="w-16 flex-shrink-0 border-r border-white/10 p-2 text-xs text-white/30 font-mono text-right sticky left-0 bg-[#050505] z-10">
                             {hour}:00
                         </div>
 
@@ -198,11 +203,11 @@ const WeekGrid = ({
                                     onDrop={(e) => onDrop(e, day, hour)}
                                     // Handle click on empty slot to create
                                     onClick={() => onClickDay(setHours(day, hour))}
-                                    className="flex-1 border-r border-white/5 relative hover:bg-white/[0.01] p-1 transition-colors group cursor-pointer"
+                                    className="flex-1 border-r border-white/10 relative hover:bg-white/[0.02] p-1 transition-colors group cursor-pointer"
                                 >
                                     {/* Add Button Hint */}
                                     <div className="absolute inset-0 opacity-0 group-hover:opacity-100 pointer-events-none flex items-center justify-center">
-                                        <Plus className="w-4 h-4 text-white/10" />
+                                        <Plus className="w-4 h-4 text-white/20" />
                                     </div>
 
                                     {dayApps.map(appt => (
@@ -212,15 +217,14 @@ const WeekGrid = ({
                                             onDragStart={(e) => onDragStart(e, appt.id)}
                                             onClick={(e) => { e.stopPropagation(); onSelectAppointment(appt); }}
                                             className={cn(
-                                                "mb-1 p-2 rounded-lg border-l-2 text-xs cursor-pointer shadow-md transition-all hover:scale-[1.02] z-20 relative",
-                                                appt.status === 'confirmed' ? "bg-primary/20 border-primary text-white" : "bg-[#222] border-white/20 text-white/70"
+                                                "mb-1 p-2 rounded-md border-l-2 text-xs cursor-pointer shadow-md transition-all hover:scale-[1.02] z-20 relative",
+                                                appt.status === 'confirmed' ? "bg-primary/20 border-primary text-white" : "bg-[#1a1a1a] border-white/20 text-white/70"
                                             )}
                                         >
-                                            <div className="font-bold flex justify-between">
+                                            <div className="font-bold flex justify-between items-center">
                                                 <span>{format(new Date(appt.startTime), 'HH:mm')}</span>
                                             </div>
-                                            <div className="truncate font-medium mt-0.5">{appt.clientName}</div>
-                                            <div className="truncate text-[10px] opacity-60">{appt.serviceTitle}</div>
+                                            <div className="truncate font-medium mt-0.5">{appt.clientName.split(' ')[0]}</div>
                                         </div>
                                     ))}
                                 </div>
@@ -236,6 +240,7 @@ const WeekGrid = ({
 export function SmartCalendar({ appointments: initialAppointments, professionals, services, clients }: SmartCalendarProps) {
     const [currentDate, setCurrentDate] = useState<Date | null>(null);
     const [view, setView] = useState<CalendarView>('month');
+    const [zoomLevel, setZoomLevel] = useState(2); // Default medium zoom
     const [appointments, setAppointments] = useState<Appointment[]>(initialAppointments);
     const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
     const [isMounted, setIsMounted] = useState(false);
@@ -396,9 +401,32 @@ export function SmartCalendar({ appointments: initialAppointments, professionals
                     </button>
                 </div>
 
-                <div className="flex bg-white/5 p-1 rounded-xl border border-white/5">
-                    <ViewBtn active={view === 'month'} onClick={() => setView('month')} icon={<LayoutGrid className="w-4 h-4" />} label="Mês" />
-                    <ViewBtn active={view === 'week'} onClick={() => setView('week')} icon={<Rows3 className="w-4 h-4" />} label="Semana" />
+                <div className="flex items-center gap-2">
+                    {/* Zoom Controls (Only show for week/day views) */}
+                    {(view === 'week' || view === 'day') && (
+                        <div className="flex items-center gap-1 bg-white/5 p-1 rounded-xl border border-white/5 mr-2">
+                            <button
+                                onClick={() => setZoomLevel(z => Math.max(1, z - 1))}
+                                className={cn("w-8 h-8 flex items-center justify-center rounded-lg text-white/60 hover:text-white transition-colors", zoomLevel === 1 && "opacity-30 cursor-not-allowed")}
+                                disabled={zoomLevel === 1}
+                            >
+                                <span className="text-lg">-</span>
+                            </button>
+                            <span className="text-xs text-center min-w-[30px] text-white/50">{zoomLevel * 100}%</span>
+                            <button
+                                onClick={() => setZoomLevel(z => Math.min(3, z + 1))}
+                                className={cn("w-8 h-8 flex items-center justify-center rounded-lg text-white/60 hover:text-white transition-colors", zoomLevel === 3 && "opacity-30 cursor-not-allowed")}
+                                disabled={zoomLevel === 3}
+                            >
+                                <span className="text-lg">+</span>
+                            </button>
+                        </div>
+                    )}
+
+                    <div className="flex bg-white/5 p-1 rounded-xl border border-white/5">
+                        <ViewBtn active={view === 'month'} onClick={() => setView('month')} icon={<LayoutGrid className="w-4 h-4" />} label="Mês" />
+                        <ViewBtn active={view === 'week'} onClick={() => setView('week')} icon={<Rows3 className="w-4 h-4" />} label="Semana" />
+                    </div>
                 </div>
             </div>
 
@@ -406,7 +434,7 @@ export function SmartCalendar({ appointments: initialAppointments, professionals
             <div className="flex-1 min-h-[600px] relative">
                 <AnimatePresence mode="wait">
                     <motion.div
-                        key={view}
+                        key={`${view}-${zoomLevel}`}
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
@@ -431,6 +459,7 @@ export function SmartCalendar({ appointments: initialAppointments, professionals
                                 onDrop={handleDrop}
                                 onSelectAppointment={setSelectedAppointment}
                                 onClickDay={handleDayClick}
+                                zoomLevel={zoomLevel}
                             />
                         )}
                         {view === 'day' && (
@@ -441,6 +470,7 @@ export function SmartCalendar({ appointments: initialAppointments, professionals
                                 onDrop={handleDrop}
                                 onSelectAppointment={setSelectedAppointment}
                                 onClickDay={handleDayClick}
+                                zoomLevel={zoomLevel} // Reusing WeekGrid for Day view (same structure in this component)
                             />
                         )}
                     </motion.div>

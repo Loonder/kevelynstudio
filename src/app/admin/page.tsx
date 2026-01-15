@@ -7,7 +7,7 @@ import { RevenueChart } from "@/components/admin/dashboard/revenue-chart";
 import { TeamPerfChart } from "@/components/admin/dashboard/team-perf-chart";
 import { ChurnRiskCard } from "@/components/admin/dashboard/churn-card";
 import { AdminCommandMenu } from "@/components/admin/admin-command-menu";
-import { UpcomingTable } from "@/components/admin/dashboard/upcoming-table"; // Would need to extract table to separate file or keep here
+
 import { TrendingUp, Users, Clock } from "lucide-react";
 
 export const dynamic = 'force-dynamic';
@@ -17,7 +17,7 @@ function SkeletonCard() {
 }
 
 async function DashboardKPIs() {
-    const { avgTicket, occupancyRate, hoursBooked } = await getKPIs();
+    const { avgTicket, occupancyRate, hoursBooked, growth } = await getKPIs();
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -48,7 +48,9 @@ async function DashboardKPIs() {
                 </div>
                 <p className="text-white/50 text-[10px] uppercase tracking-[0.2em] mb-2 font-medium">Performance</p>
                 <p className="text-sm text-white/70 mt-2">
-                    Sua equipe está performando <span className="text-green-400">12% melhor</span> que o mês passado.
+                    Sua equipe está performando <span className={growth >= 0 ? "text-green-400" : "text-red-400"}>
+                        {growth > 0 ? '+' : ''}{growth}%
+                    </span> em relação ao mês passado.
                 </p>
             </GlassCard>
         </div>

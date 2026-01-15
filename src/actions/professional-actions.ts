@@ -9,44 +9,77 @@ import { z } from "zod";
 const professionalSchema = z.object({
     name: z.string().min(1, "Nome é obrigatório"),
     role: z.string().min(1, "Cargo é obrigatório"),
+    slug: z.string().optional(),
     bio: z.string().nullable().optional(),
-    color: z.string().min(4, "Cor inválida"),
+    instagramHandle: z.string().nullable().optional(),
+    imageUrl: z.string().nullable().optional(),
+    color: z.string().optional(),
 });
 
-export async function createProfessional(formData: FormData) {
-    const rawData = {
-        name: formData.get("name")?.toString(),
-        role: formData.get("role")?.toString(),
-        bio: formData.get("bio")?.toString() || null,
-        color: formData.get("color")?.toString(),
-    };
+export type ProfessionalInput = z.infer<typeof professionalSchema> & { id?: string };
 
-    const result = professionalSchema.safeParse(rawData);
+export async function createProfessional(data: Omit<ProfessionalInput, 'id'>) {
+    const result = professionalSchema.safeParse(data);
 
     if (!result.success) {
         const errorMessage = Object.values(result.error.flatten().fieldErrors).flat().join(", ");
-        return { error: `Dados inválidos: ${errorMessage}` };
+        return { success: false, error: `Dados inválidos: ${errorMessage}` };
     }
 
-    const { name, role, bio, color } = result.data;
+    const { name, role, slug, bio, instagramHandle, imageUrl, color } = result.data;
 
     try {
         await db.insert(professionals).values({
-            name: name!,
-            role: role!,
+            name,
+            role,
+            slug: slug || name.toLowerCase().replace(/\s+/g, '-') + '-' + Math.random().toString(36).substring(7),
             bio: bio || null,
-            slug: name!.toLowerCase().replace(/\s+/g, '-') + '-' + Math.random().toString(36).substring(7),
+            instagramHandle: instagramHandle || null,
+            imageUrl: imageUrl || null,
             color: color || "#D4AF37",
-            imageUrl: "", // Placeholder for now
             isActive: true
         });
 
         revalidatePath("/admin/professionals");
+        revalidatePath("/admin/team");
         revalidatePath("/admin/calendar");
         return { success: true };
     } catch (error) {
         console.error("Create Professional Error:", error);
-        return { error: "Erro ao criar profissional." };
+        return { success: false, error: "Erro ao criar profissional." };
+    }
+}
+
+export async function updateProfessional(id: string, data: Omit<ProfessionalInput, 'id'>) {
+    const result = professionalSchema.safeParse(data);
+
+    if (!result.success) {
+        const errorMessage = Object.values(result.error.flatten().fieldErrors).flat().join(", ");
+        return { success: false, error: `Dados inválidos: ${errorMessage}` };
+    }
+
+    const { name, role, slug, bio, instagramHandle, imageUrl, color } = result.data;
+
+    try {
+        await db.update(professionals)
+            .set({
+                name,
+                role,
+                slug: slug || name.toLowerCase().replace(/\s+/g, '-') + '-' + Math.random().toString(36).substring(7),
+                bio: bio || null,
+                instagramHandle: instagramHandle || null,
+                imageUrl: imageUrl || null,
+                color: color || "#D4AF37",
+            })
+            .where(eq(professionals.id, id));
+
+        revalidatePath("/admin/professionals");
+        revalidatePath("/admin/team");
+        revalidatePath("/admin/calendar");
+        return { success: true };
+    } catch (error) {
+        console.error("Update Professional Error:", error);
+        return { success: false, error: "Erro ao atualizar profissional." };
     }
 }
 
@@ -72,5 +105,18 @@ export async function deleteProfessional(id: string) {
         return { success: true };
     } catch (error) {
         return { error: "Erro ao excluir profissional." };
+    }
+}
+
+export async function getProfessionalsForBooking() {
+    try {
+        const result = await db.query.professionals.findMany({
+            where: eq(professionals.isActive, true),
+            orderBy: (professionals, { asc }) => [asc(professionals.name)]
+        });
+        return result;
+    } catch (error) {
+        console.error("Get Professionals For Booking Error:", error);
+        return [];
     }
 }

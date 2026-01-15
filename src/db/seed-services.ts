@@ -1,7 +1,7 @@
 
+
 import { db } from "@/lib/db";
 import { services, professionals } from "@/db/schema";
-import { reset } from "drizzle-seed";
 
 async function seed() {
     console.log("🌱 Clearing functionality tables...");

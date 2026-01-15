@@ -3,7 +3,8 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Eye } from "lucide-react";
+import { Eye, Edit } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
     Sheet,
@@ -60,11 +61,19 @@ export const clientColumns: ColumnDef<ClientColumn>[] = [
             const client = row.original;
             return (
                 <Sheet>
-                    <SheetTrigger asChild>
-                        <Button variant="ghost" size="icon" className="hover:bg-primary/20 hover:text-primary">
-                            <Eye className="w-4 h-4" />
-                        </Button>
-                    </SheetTrigger>
+                    <div className="flex items-center gap-2 justify-end">
+                        <Link href={`/admin/clients/edit/${client.id}`}>
+                            <Button variant="ghost" size="icon" className="hover:bg-primary/20 hover:text-primary" title="Editar">
+                                <Edit className="w-4 h-4" />
+                            </Button>
+                        </Link>
+
+                        <SheetTrigger asChild>
+                            <Button variant="ghost" size="icon" className="hover:bg-white/20 hover:text-white" title="Visualizar Detalhes">
+                                <Eye className="w-4 h-4" />
+                            </Button>
+                        </SheetTrigger>
+                    </div>
                     <SheetContent className="bg-zinc-950 border-white/10 text-white overflow-y-auto">
                         <SheetHeader className="mb-6">
                             <SheetTitle className="text-gold font-serif text-2xl">{client.fullName}</SheetTitle>

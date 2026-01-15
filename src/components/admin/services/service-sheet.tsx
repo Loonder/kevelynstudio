@@ -24,17 +24,26 @@ export function ServiceSheet({ serviceToEdit, trigger, open, onOpenChange }: Ser
     // If controlled (open/onOpenChange passed), use that. Else generic trigger.
     const isEdit = !!serviceToEdit;
 
-    async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-        event.preventDefault();
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
         setIsLoading(true);
-        const formData = new FormData(event.currentTarget);
+        const formData = new FormData(e.currentTarget);
+
+        const data = {
+            title: formData.get("name") as string, // Changed from "title" to "name" to match input field
+            description: formData.get("description") as string || undefined,
+            price: Number(formData.get("price")),
+            durationMinutes: Number(formData.get("duration")),
+            category: formData.get("category") as string,
+            imageUrl: undefined, // Assuming imageUrl is not part of the form for now
+        };
 
         try {
             let result;
             if (isEdit) {
-                result = await updateService(serviceToEdit.id, formData);
+                result = await updateService(serviceToEdit.id, data);
             } else {
-                result = await createService(formData);
+                result = await createService(data);
             }
 
             if (result.error) {

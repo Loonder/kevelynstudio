@@ -38,9 +38,9 @@ export default async function AdminAcademyPage() {
                     <tbody className="divide-y divide-white/5">
                         {allCourses.map((course) => (
                             <tr key={course.id} className="hover:bg-white/[0.02] transition-colors">
-                                <td className="p-6">
+                                <td className="p-6 align-middle">
                                     <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 rounded bg-white/10 flex items-center justify-center text-primary">
+                                        <div className="w-12 h-12 rounded bg-white/10 flex items-center justify-center text-primary shrink-0">
                                             <GraduationCap className="w-6 h-6" />
                                         </div>
                                         <div>
@@ -49,17 +49,17 @@ export default async function AdminAcademyPage() {
                                         </div>
                                     </div>
                                 </td>
-                                <td className="p-6">
+                                <td className="p-6 align-middle">
                                     {(course.price / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                                 </td>
-                                <td className="p-6">
-                                    <span className={`px-2 py-1 rounded text-[10px] uppercase tracking-wider font-bold ${course.active ? 'bg-green-500/20 text-green-400' : 'bg-white/10 text-white/40'}`}>
+                                <td className="p-6 align-middle">
+                                    <span className={`inline-flex items-center px-2.5 py-1 rounded text-[10px] uppercase tracking-wider font-bold ${course.active ? 'bg-green-500/20 text-green-400' : 'bg-white/10 text-white/40'}`}>
                                         {course.active ? 'Ativo' : 'Rascunho'}
                                     </span>
                                 </td>
-                                <td className="p-6 text-right">
+                                <td className="p-6 text-right align-middle">
                                     <Link href={`/admin/academy/${course.id}`}>
-                                        <LuxuryButton variant="outline" className="text-xs h-8">
+                                        <LuxuryButton variant="outline" className="text-xs h-8 hover:bg-[#D4AF37] hover:text-black border-white/20">
                                             Gerenciar Aulas
                                         </LuxuryButton>
                                     </Link>

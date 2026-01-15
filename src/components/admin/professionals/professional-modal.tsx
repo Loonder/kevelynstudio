@@ -33,10 +33,19 @@ export function ProfessionalModal({ trigger }: ProfessionalModalProps) {
         event.preventDefault();
         setIsLoading(true);
         const formData = new FormData(event.currentTarget);
-        formData.set("color", selectedColor);
+
+        const data = {
+            name: formData.get("name") as string,
+            role: formData.get("role") as string,
+            bio: formData.get("bio") as string || null,
+            color: selectedColor,
+            slug: "",
+            instagramHandle: null,
+            imageUrl: null,
+        };
 
         try {
-            const result = await createProfessional(formData);
+            const result = await createProfessional(data);
 
             if (result.error) {
                 toast.error(result.error);
@@ -99,8 +108,8 @@ export function ProfessionalModal({ trigger }: ProfessionalModalProps) {
                                     type="button"
                                     onClick={() => setSelectedColor(color.value)}
                                     className={`w-8 h-8 rounded-full transition-all duration-300 ${color.class} ${selectedColor === color.value
-                                            ? "ring-2 ring-white scale-110 shadow-[0_0_15px_rgba(255,255,255,0.4)]"
-                                            : "opacity-50 hover:opacity-100 hover:scale-105"
+                                        ? "ring-2 ring-white scale-110 shadow-[0_0_15px_rgba(255,255,255,0.4)]"
+                                        : "opacity-50 hover:opacity-100 hover:scale-105"
                                         }`}
                                     title={color.name}
                                 />

@@ -7,37 +7,33 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 
 const serviceSchema = z.object({
-    name: z.string().min(1, "Nome é obrigatório"),
+    title: z.string().min(1, "Nome é obrigatório"),
     description: z.string().optional(),
-    price: z.coerce.number().min(0, "Preço deve ser positivo"),
-    duration: z.coerce.number().min(1, "Duração deve ser positiva"),
+    price: z.number().int().min(0, "Preço deve ser positivo"),
+    durationMinutes: z.number().int().min(1, "Duração deve ser positiva"),
     category: z.string().min(1, "Categoria é obrigatória"),
+    imageUrl: z.string().optional(),
 });
 
-export async function createService(formData: FormData) {
-    const rawData = {
-        name: formData.get("name"),
-        description: formData.get("description"),
-        price: formData.get("price"),
-        duration: formData.get("duration"),
-        category: formData.get("category"),
-    };
+export type ServiceInput = z.infer<typeof serviceSchema> & { id?: string };
 
-    const result = serviceSchema.safeParse(rawData);
+export async function createService(data: Omit<ServiceInput, 'id'>) {
+    const result = serviceSchema.safeParse(data);
 
     if (!result.success) {
-        return { error: "Dados inválidos: " + result.error.errors.map(e => e.message).join(", ") };
+        return { error: "Dados inválidos: " + result.error.issues.map((e: any) => e.message).join(", ") };
     }
 
-    const { name, description, price, duration, category } = result.data;
+    const { title, description, price, durationMinutes, category, imageUrl } = result.data;
 
     try {
         await db.insert(services).values({
-            title: name,
+            title,
             description: description || "",
-            price: Math.round(price * 100), // Convert to cents
-            durationMinutes: duration,
-            category: category,
+            price,
+            durationMinutes,
+            category,
+            imageUrl: imageUrl || null,
         });
 
         revalidatePath("/admin/services");
@@ -49,31 +45,24 @@ export async function createService(formData: FormData) {
     }
 }
 
-export async function updateService(id: string, formData: FormData) {
-    const rawData = {
-        name: formData.get("name"),
-        description: formData.get("description"),
-        price: formData.get("price"),
-        duration: formData.get("duration"),
-        category: formData.get("category"),
-    };
-
-    const result = serviceSchema.safeParse(rawData);
+export async function updateService(id: string, data: Omit<ServiceInput, 'id'>) {
+    const result = serviceSchema.safeParse(data);
 
     if (!result.success) {
         return { error: "Dados inválidos." };
     }
 
-    const { name, description, price, duration, category } = result.data;
+    const { title, description, price, durationMinutes, category, imageUrl } = result.data;
 
     try {
         await db.update(services)
             .set({
-                title: name,
+                title,
                 description: description || "",
-                price: Math.round(price * 100),
-                durationMinutes: duration,
-                category: category,
+                price,
+                durationMinutes,
+                category,
+                imageUrl: imageUrl || null,
             })
             .where(eq(services.id, id));
 
@@ -93,5 +82,17 @@ export async function deleteService(id: string) {
         return { success: true };
     } catch (error) {
         return { error: "Erro ao excluir serviço. Verifique se há agendamentos vinculados." };
+    }
+}
+
+export async function getServicesForBooking() {
+    try {
+        const result = await db.query.services.findMany({
+            orderBy: (services, { asc }) => [asc(services.displayOrder), asc(services.title)]
+        });
+        return result;
+    } catch (error) {
+        console.error("Get Services For Booking Error:", error);
+        return [];
     }
 }

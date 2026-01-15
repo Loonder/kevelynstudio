@@ -67,7 +67,13 @@ export function AdminSidebar() {
             </nav>
 
             <div className="p-4 border-t border-white/10">
-                <button className="flex items-center gap-3 px-4 py-3 w-full text-white/60 hover:text-white hover:bg-white/5 rounded-md transition-colors group">
+                <button
+                    onClick={() => {
+                        // In a real app, call signOut() server action here
+                        window.location.href = "/login";
+                    }}
+                    className="flex items-center gap-3 px-4 py-3 w-full text-white/60 hover:text-white hover:bg-white/5 rounded-md transition-colors group"
+                >
                     <LogOut className="w-5 h-5 group-hover:text-red-400 transition-colors" />
                     <span className="text-sm font-medium">Sair</span>
                 </button>

@@ -120,25 +120,30 @@ export async function createAppointment(data: {
     professionalId: string;
     serviceId: string;
     startTime: Date | string;
-    // endTime is now optional/calculated if passed, but we recommend ignoring it and calculating from service
-    // However, if the UI passes it, we can sanity check. 
-    // For this specific request: "Receba startTime e serviceId. Busque duração. Calcule endTime."
+    endTime?: Date | string; // Optional: if provided from calendar drag, use it instead of calculating
 }) {
     try {
         const start = new Date(data.startTime);
 
-        // 1. Get Service Duration
-        const service = await db.query.services.findFirst({
-            where: eq(services.id, data.serviceId)
-        });
+        // 1. Determine End Time
+        let end: Date;
 
-        if (!service) {
-            return { success: false, error: "Serviço não encontrado." };
+        if (data.endTime) {
+            // Use provided endTime from calendar drag
+            end = new Date(data.endTime);
+        } else {
+            // Calculate from service duration
+            const service = await db.query.services.findFirst({
+                where: eq(services.id, data.serviceId)
+            });
+
+            if (!service) {
+                return { success: false, error: "Serviço não encontrado." };
+            }
+
+            const duration = service.durationMinutes || 60;
+            end = new Date(start.getTime() + duration * 60000);
         }
-
-        // 2. Calculate End Time
-        const duration = service.durationMinutes || 60;
-        const end = new Date(start.getTime() + duration * 60000);
 
         // 3. CRITICAL: Check Overlap
         const hasConflict = await checkOverlap(data.professionalId, start, end);

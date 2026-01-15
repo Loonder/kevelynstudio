@@ -25,6 +25,12 @@ export const services = pgTable("services", {
     durationMinutes: integer("duration_minutes").notNull(),
     category: text("category").notNull(), // 'Lashes', 'Brows'
     imageUrl: text("image_url"),
+
+    // VIP Menu Engineering
+    displayOrder: integer("display_order").default(0),
+    isFeatured: boolean("is_featured").default(false),
+    promotionalPrice: integer("promotional_price"), // in cents, nullable
+
     createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -131,6 +137,8 @@ export const blogPosts = pgTable("blog_posts", {
     excerpt: text("excerpt"),
     coverImage: text("cover_image"),
     content: jsonb("content"), // Rich content blocks
+    category: text("category").default("General"), // 'Lashes', 'Brows', etc.
+    featured: boolean("featured").default(false),
     published: boolean("published").default(false),
     authorId: text("author_id"), // Could be UUID relations or simple text for now
     createdAt: timestamp("created_at").defaultNow(),

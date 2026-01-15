@@ -2,8 +2,8 @@
 
 import { db } from "@/lib/db";
 import { appointments, services, professionals, clients } from "@/db/schema";
-import { eq, and, gte, lte, sql, desc, isNull, or } from "drizzle-orm";
-import { startOfMonth, subMonths, format, startOfToday, endOfToday } from "date-fns";
+import { eq, and, gte, lte, lt, sql, desc, isNull, or } from "drizzle-orm";
+import { startOfMonth, endOfMonth, subMonths, format, startOfToday, endOfToday } from "date-fns";
 
 // 1. CHART: Monthly Revenue (Last 6 Months)
 export async function getRevenueChartData() {
@@ -24,7 +24,7 @@ export async function getRevenueChartData() {
             .where(and(
                 eq(appointments.status, 'completed'),
                 gte(appointments.startTime, start),
-                sql`${appointments.startTime} < ${end}` // Safer than lte endOfMonth due to time precision
+                lt(appointments.startTime, end)
             ));
 
         data.push({
@@ -97,10 +97,32 @@ export async function getKPIs() {
     const totalCapacity = 528;
     const occupancyRate = Math.min((hoursBooked / totalCapacity) * 100, 100).toFixed(1);
 
+    // 3. Performance Growth (Appointments this month vs last month)
+    const lastMonthStart = startOfMonth(subMonths(new Date(), 1));
+    const lastMonthEnd = endOfMonth(subMonths(new Date(), 1));
+
+    const currentMonthCount = await db.select({ count: sql<number>`count(*)` })
+        .from(appointments)
+        .where(gte(appointments.startTime, start));
+
+    const lastMonthCount = await db.select({ count: sql<number>`count(*)` })
+        .from(appointments)
+        .where(and(
+            gte(appointments.startTime, lastMonthStart),
+            lt(appointments.startTime, lastMonthEnd)
+        ));
+
+    const currentCount = currentMonthCount[0]?.count || 0;
+    const pastCount = lastMonthCount[0]?.count || 1; // Avoid div by zero
+
+    // Calculate percentage difference
+    const growth = Math.round(((currentCount - pastCount) / pastCount) * 100);
+
     return {
         avgTicket,
         occupancyRate,
-        hoursBooked
+        hoursBooked,
+        growth // Returns e.g. 12, -5, 0
     };
 }
 

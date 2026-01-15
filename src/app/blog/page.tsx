@@ -1,4 +1,6 @@
-import { BLOG_POSTS } from "@/lib/blog-data";
+import { db } from "@/lib/db";
+import { blogPosts } from "@/db/schema";
+import { desc, eq } from "drizzle-orm";
 import { GlassCard } from "@/components/ui/glass-card";
 import { LuxuryButton } from "@/components/ui/luxury-button";
 import { format } from "date-fns";
@@ -7,19 +9,42 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Clock } from "lucide-react";
 
-export default function BlogPage() {
-    const featuredPost = BLOG_POSTS[0];
-    const otherPosts = BLOG_POSTS.slice(1);
+export const dynamic = 'force-dynamic';
+
+export default async function BlogPage() {
+    // Fetch all published posts, ordering by featured first, then date
+    const allPosts = await db.select()
+        .from(blogPosts)
+        .where(eq(blogPosts.published, true))
+        .orderBy(desc(blogPosts.featured), desc(blogPosts.createdAt));
+
+    if (allPosts.length === 0) {
+        return (
+            <div className="min-h-screen bg-[#050505] text-white flex items-center justify-center font-serif">
+                <p className="text-2xl text-white/50">Em breve...</p>
+            </div>
+        );
+    }
+
+    const featuredPost = allPosts[0];
+    const otherPosts = allPosts.slice(1);
+
+    // Helper to estimate read time since we don't store it yet
+    const getReadTime = (content: any) => {
+        // Approximate: 200 words per minute
+        // For now return hardcoded or random if content is complex JSON
+        return "5 min";
+    };
 
     return (
         <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-primary/30">
 
             {/* Hero Section (Featured Post) */}
             <section className="relative w-full h-[85vh] flex items-end justify-start overflow-hidden group">
-                {/* Background Image with Parallax-like feel via fixed or absolute */}
+                {/* Background Image */}
                 <div className="absolute inset-0 z-0">
                     <Image
-                        src={featuredPost.coverImageUrl}
+                        src={featuredPost.coverImage || '/placeholder.jpg'}
                         alt={featuredPost.title}
                         fill
                         className="object-cover transition-transform duration-[2s] group-hover:scale-105"
@@ -39,17 +64,17 @@ export default function BlogPage() {
                                 {featuredPost.title}
                             </Link>
                         </h1>
-                        <p className="text-lg md:text-xl text-white/80 max-w-2xl font-light leading-relaxed">
+                        <p className="text-lg md:text-xl text-white/80 max-w-2xl font-light leading-relaxed line-clamp-3">
                             {featuredPost.excerpt}
                         </p>
 
                         <div className="flex items-center gap-6 text-sm text-white/60 pt-4">
                             <span className="tracking-widest uppercase">{featuredPost.category}</span>
                             <span className="w-1 h-1 rounded-full bg-primary" />
-                            <span>{format(new Date(featuredPost.date), "dd 'de' MMMM, yyyy", { locale: ptBR })}</span>
+                            <span>{featuredPost.createdAt ? format(featuredPost.createdAt, "dd 'de' MMMM, yyyy", { locale: ptBR }) : ''}</span>
                             <span className="w-1 h-1 rounded-full bg-primary" />
                             <span className="flex items-center gap-2">
-                                <Clock className="w-4 h-4" /> {featuredPost.readTime}
+                                <Clock className="w-4 h-4" /> 5 min
                             </span>
                         </div>
 
@@ -72,13 +97,13 @@ export default function BlogPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {otherPosts.map((post, index) => (
+                    {otherPosts.map((post) => (
                         <Link key={post.slug} href={`/blog/${post.slug}`} className="group">
                             <GlassCard className="h-full flex flex-col p-0 overflow-hidden border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-500 group-hover:-translate-y-2">
                                 {/* Image */}
                                 <div className="relative aspect-[4/3] w-full overflow-hidden">
                                     <Image
-                                        src={post.coverImageUrl}
+                                        src={post.coverImage || '/placeholder.jpg'}
                                         alt={post.title}
                                         fill
                                         className="object-cover transition-transform duration-700 group-hover:scale-110"
@@ -93,9 +118,9 @@ export default function BlogPage() {
                                 {/* Content */}
                                 <div className="p-8 flex flex-col flex-1">
                                     <div className="flex items-center gap-2 text-xs text-white/40 mb-3 uppercase tracking-wider">
-                                        <span>{format(new Date(post.date), "MMM dd, yyyy", { locale: ptBR })}</span>
+                                        <span>{post.createdAt ? format(post.createdAt, "MMM dd, yyyy", { locale: ptBR }) : ''}</span>
                                         <span className="w-1 h-1 rounded-full bg-primary/50" />
-                                        <span>{post.readTime}</span>
+                                        <span>5 min</span>
                                     </div>
 
                                     <h3 className="text-2xl font-serif text-white group-hover:text-primary transition-colors mb-4 line-clamp-2 leading-tight">

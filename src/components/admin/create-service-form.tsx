@@ -21,7 +21,8 @@ export function CreateServiceForm({ onSuccess }: CreateServiceFormProps) {
                 price: Number(formData.get("price")),
                 durationMinutes: Number(formData.get("duration")),
                 category: formData.get("category") as string,
-                description: formData.get("description") as string,
+                description: formData.get("description") as string || undefined,
+                imageUrl: undefined,
             };
 
             const result = await createService(data);
