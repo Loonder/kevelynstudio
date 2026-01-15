@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { Calendar, dateFnsLocalizer, Views, View, Navigate } from "react-big-calendar";
 import withDragAndDrop from "react-big-calendar/lib/addons/dragAndDrop";
 import { format, parse, startOfWeek, getDay } from "date-fns";
@@ -182,6 +183,7 @@ export function AdminCalendar({ initialEvents, resources, clients, services, def
     const [view, setView] = useState<View>(getInitialView);
     const [date, setDate] = useState(defaultDate);
     const [selectedProfessionalId, setSelectedProfessionalId] = useState<string>('all');
+    const router = useRouter(); // M6: For soft refresh instead of reload
 
     // Enable mouse wheel scroll on calendar time content
     useEffect(() => {
@@ -257,10 +259,12 @@ export function AdminCalendar({ initialEvents, resources, clients, services, def
         });
     }, []);
 
-    // Handle opening edit modal from detail modal
+    // Handle opening edit modal from detail modal (M5: delay to prevent flicker)
     const handleOpenEditModal = useCallback((appointment: any) => {
         setDetailModal({ isOpen: false, appointment: null });
-        setEditModal({ isOpen: true, appointment });
+        setTimeout(() => {
+            setEditModal({ isOpen: true, appointment });
+        }, 150);
     }, []);
 
     // Filtered Events Logic
@@ -650,7 +654,7 @@ export function AdminCalendar({ initialEvents, resources, clients, services, def
                 clients={clients}
                 services={services}
                 onSuccess={() => {
-                    window.location.reload();
+                    router.refresh(); // M6: Better UX than window.location.reload
                 }}
             />
 
@@ -667,11 +671,8 @@ export function AdminCalendar({ initialEvents, resources, clients, services, def
                 appointment={editModal.appointment}
                 open={editModal.isOpen}
                 onOpenChange={(open) => setEditModal(prev => ({ ...prev, isOpen: open }))}
-                professionals={resources}
-                services={services}
-                clients={clients}
                 onSuccess={() => {
-                    window.location.reload();
+                    router.refresh(); // M6: Better UX than window.location.reload
                 }}
             />
         </div>

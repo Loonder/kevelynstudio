@@ -59,7 +59,26 @@ export async function rescheduleAppointment(
             end = new Date(start.getTime() + duration * 60000);
         }
 
-        // 4. SECURITY: Check Overlap
+        // 4. VALIDATION: End must be after Start
+        if (end <= start) {
+            return {
+                success: false,
+                error: "Horário de término deve ser após o horário de início."
+            };
+        }
+
+        // 5. VALIDATION: Cannot schedule in the past
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const startDay = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+        if (startDay < today) {
+            return {
+                success: false,
+                error: "Não é possível agendar no passado."
+            };
+        }
+
+        // 6. SECURITY: Check Overlap
         const hasConflict = await checkOverlap(targetProfId, start, end, appointmentId);
 
         if (hasConflict) {
@@ -145,7 +164,26 @@ export async function createAppointment(data: {
             end = new Date(start.getTime() + duration * 60000);
         }
 
-        // 3. CRITICAL: Check Overlap
+        // 2. VALIDATION: End must be after Start
+        if (end <= start) {
+            return {
+                success: false,
+                error: "Horário de término deve ser após o horário de início."
+            };
+        }
+
+        // 3. VALIDATION: Cannot schedule in the past
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const startDay = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+        if (startDay < today) {
+            return {
+                success: false,
+                error: "Não é possível agendar no passado."
+            };
+        }
+
+        // 4. CRITICAL: Check Overlap
         const hasConflict = await checkOverlap(data.professionalId, start, end);
 
         if (hasConflict) {

@@ -2,21 +2,16 @@
 
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { LuxuryButton } from "@/components/ui/luxury-button";
 import { updateAppointmentStatus, rescheduleAppointment } from "@/actions/calendar-actions";
-import { Calendar, Clock, User, Scissors, CheckCircle2, X, Trash2 } from "lucide-react";
-import { format, addMinutes } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { Calendar, Clock, User, CheckCircle2, Trash2 } from "lucide-react";
+import { format } from "date-fns";
 import { toast } from "sonner";
 
 interface EditAppointmentModalProps {
     appointment: any | null;
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    professionals: any[];
-    services: any[];
-    clients: any[];
     onSuccess?: () => void;
 }
 
@@ -24,16 +19,11 @@ export function EditAppointmentModal({
     appointment,
     open,
     onOpenChange,
-    professionals,
-    services,
-    clients,
     onSuccess
 }: EditAppointmentModalProps) {
     const [loading, setLoading] = useState(false);
     const [startTime, setStartTime] = useState("");
     const [endTime, setEndTime] = useState("");
-    const [professionalId, setProfessionalId] = useState("");
-    const [serviceId, setServiceId] = useState("");
     const [status, setStatus] = useState("pending");
     const [selectedDate, setSelectedDate] = useState("");
 
@@ -46,45 +36,60 @@ export function EditAppointmentModal({
             setSelectedDate(format(start, "yyyy-MM-dd"));
             setStartTime(format(start, "HH:mm"));
             setEndTime(format(end, "HH:mm"));
-            setProfessionalId(appointment.professionalId || "");
-            setServiceId(appointment.serviceId || "");
             setStatus(appointment.status || "pending");
         }
     }, [appointment, open]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!appointment) return;
+
+        // G1: Rate limiting - prevent double submit
+        if (!appointment || loading) return;
+
+        // Parse times
+        const [startHours, startMinutes] = startTime.split(':').map(Number);
+        const [endHours, endMinutes] = endTime.split(':').map(Number);
+
+        const start = new Date(selectedDate);
+        start.setHours(startHours, startMinutes, 0, 0);
+
+        const end = new Date(selectedDate);
+        end.setHours(endHours, endMinutes, 0, 0);
+
+        // M1: Client validation - end must be after start
+        if (end <= start) {
+            toast.error("Horário de término deve ser após o início");
+            return;
+        }
+
+        // M2: Client validation - cannot schedule in the past
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        if (start < today) {
+            toast.error("Não é possível agendar no passado");
+            return;
+        }
 
         setLoading(true);
 
         try {
-            // Parse times
-            const [startHours, startMinutes] = startTime.split(':').map(Number);
-            const [endHours, endMinutes] = endTime.split(':').map(Number);
-
-            const start = new Date(selectedDate);
-            start.setHours(startHours, startMinutes, 0, 0);
-
-            const end = new Date(selectedDate);
-            end.setHours(endHours, endMinutes, 0, 0);
-
             // Update appointment
             const result = await rescheduleAppointment(appointment.id, start, end);
 
             if (result.success) {
-                // Also update status, professional, service
-                // Note: rescheduleAppointment only updates time, so we'd need additional calls
-                // For simplicity, showing successful reschedule toast
                 toast.success("Agendamento atualizado!");
                 onSuccess?.();
                 onOpenChange(false);
             } else {
                 toast.error(result.error || "Erro ao atualizar");
             }
-        } catch (error) {
-            console.error(error);
-            toast.error("Erro inesperado");
+        } catch (error: any) {
+            // M4: Improved error handling
+            console.error("[EditAppointmentModal] Failed to update:", {
+                appointmentId: appointment?.id,
+                error: error?.message
+            });
+            toast.error(error?.message || "Erro inesperado");
         } finally {
             setLoading(false);
         }
@@ -136,6 +141,7 @@ export function EditAppointmentModal({
                             onClick={handleDelete}
                             className="p-2 hover:bg-red-500/10 rounded-full transition-colors"
                             title="Cancelar agendamento"
+                            aria-label="Cancelar agendamento"
                         >
                             <Trash2 className="w-5 h-5 text-red-400" />
                         </button>
