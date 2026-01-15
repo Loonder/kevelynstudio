@@ -10,9 +10,10 @@ type AppointmentDetailModalProps = {
     appointment: any | null;
     open: boolean;
     onOpenChange: (open: boolean) => void;
+    onEdit?: (appointment: any) => void;
 };
 
-export function AppointmentDetailModal({ appointment, open, onOpenChange }: AppointmentDetailModalProps) {
+export function AppointmentDetailModal({ appointment, open, onOpenChange, onEdit }: AppointmentDetailModalProps) {
     if (!appointment) return null;
 
     // Helper function to safely parse dates
@@ -199,18 +200,17 @@ export function AppointmentDetailModal({ appointment, open, onOpenChange }: Appo
                     >
                         Fechar
                     </button>
-                    <button
-                        onClick={() => {
-                            onOpenChange(false);
-                            // Parent component should handle opening edit modal
-                            if ((window as any).openEditAppointmentModal) {
-                                (window as any).openEditAppointmentModal(appointment);
-                            }
-                        }}
-                        className="px-6 py-2 bg-primary hover:bg-primary/90 text-black rounded-xl font-bold transition-all"
-                    >
-                        Editar
-                    </button>
+                    {onEdit && (
+                        <button
+                            onClick={() => {
+                                onEdit(appointment);
+                                onOpenChange(false);
+                            }}
+                            className="px-6 py-2 bg-primary hover:bg-primary/90 text-black rounded-xl font-bold transition-all"
+                        >
+                            Editar
+                        </button>
+                    )}
                 </div>
             </DialogContent>
         </Dialog>

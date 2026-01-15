@@ -12,6 +12,7 @@ import { LuxuryButton } from "@/components/ui/luxury-button";
 import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, Filter, Users } from "lucide-react";
 import { CreateAppointmentModal } from "./create-appointment-modal";
 import { AppointmentDetailModal } from "./appointment-detail-modal";
+import { EditAppointmentModal } from "./edit-appointment-modal";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import "react-big-calendar/lib/addons/dragAndDrop/styles.css";
 
@@ -239,12 +240,27 @@ export function AdminCalendar({ initialEvents, resources, clients, services, def
         appointment: null,
     });
 
+    // Edit Modal State
+    const [editModal, setEditModal] = useState<{
+        isOpen: boolean;
+        appointment: any | null;
+    }>({
+        isOpen: false,
+        appointment: null,
+    });
+
     // Handle clicking on an event to view details
     const handleSelectEvent = useCallback((event: any) => {
         setDetailModal({
             isOpen: true,
             appointment: event,
         });
+    }, []);
+
+    // Handle opening edit modal from detail modal
+    const handleOpenEditModal = useCallback((appointment: any) => {
+        setDetailModal({ isOpen: false, appointment: null });
+        setEditModal({ isOpen: true, appointment });
     }, []);
 
     // Filtered Events Logic
@@ -643,6 +659,20 @@ export function AdminCalendar({ initialEvents, resources, clients, services, def
                 appointment={detailModal.appointment}
                 open={detailModal.isOpen}
                 onOpenChange={(open) => setDetailModal(prev => ({ ...prev, isOpen: open }))}
+                onEdit={handleOpenEditModal}
+            />
+
+            {/* Appointment Edit Modal */}
+            <EditAppointmentModal
+                appointment={editModal.appointment}
+                open={editModal.isOpen}
+                onOpenChange={(open) => setEditModal(prev => ({ ...prev, isOpen: open }))}
+                professionals={resources}
+                services={services}
+                clients={clients}
+                onSuccess={() => {
+                    window.location.reload();
+                }}
             />
         </div>
     )

@@ -194,41 +194,6 @@ export function EditAppointmentModal({
                         </div>
                     </div>
 
-                    {/* Service */}
-                    <div>
-                        <label className="text-xs text-white/40 uppercase font-bold mb-2 block">Serviço</label>
-                        <div className="relative">
-                            <Scissors className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                            <select
-                                required
-                                value={serviceId}
-                                onChange={e => setServiceId(e.target.value)}
-                                className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-sm md:text-base text-white focus:outline-none focus:border-primary/50 transition-colors appearance-none"
-                            >
-                                <option value="" className="bg-[#121212] text-white/50">Selecione o Serviço</option>
-                                {services.map(s => (
-                                    <option key={s.id} value={s.id} className="bg-[#121212]">{s.title} ({s.durationMinutes}m)</option>
-                                ))}
-                            </select>
-                        </div>
-                    </div>
-
-                    {/* Professional */}
-                    <div>
-                        <label className="text-xs text-white/40 uppercase font-bold mb-2 block">Profissional</label>
-                        <select
-                            required
-                            value={professionalId}
-                            onChange={e => setProfessionalId(e.target.value)}
-                            className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-sm md:text-base text-white focus:outline-none focus:border-primary/50 transition-colors appearance-none"
-                        >
-                            <option value="" className="bg-[#121212] text-white/50">Quem atende?</option>
-                            {professionals.map(p => (
-                                <option key={p.id} value={p.id} className="bg-[#121212]">{p.name}</option>
-                            ))}
-                        </select>
-                    </div>
-
                     {/* Status */}
                     <div>
                         <label className="text-xs text-white/40 uppercase font-bold mb-2 block">Status</label>
