@@ -149,7 +149,7 @@ export function CreateAppointmentModal({
                             required
                             value={serviceId}
                             onChange={e => setServiceId(e.target.value)}
-                            className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:border-primary/50 transition-colors appearance-none"
+                            className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-sm md:text-base text-white focus:outline-none focus:border-primary/50 transition-colors appearance-none"
                         >
                             <option value="" className="bg-[#121212] text-white/50">Selecione o Serviço</option>
                             {services.map(s => (
@@ -159,7 +159,7 @@ export function CreateAppointmentModal({
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Professional Select */}
                     <div>
                         <label className="text-xs text-white/40 uppercase font-bold mb-1.5 block ml-1">Profissional</label>
@@ -167,7 +167,7 @@ export function CreateAppointmentModal({
                             required
                             value={professionalId}
                             onChange={e => setProfessionalId(e.target.value)}
-                            className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-primary/50 transition-colors appearance-none"
+                            className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-sm md:text-base text-white focus:outline-none focus:border-primary/50 transition-colors appearance-none"
                         >
                             <option value="" className="bg-[#121212] text-white/50">Quem atende?</option>
                             {professionals.map(p => (
@@ -187,35 +187,35 @@ export function CreateAppointmentModal({
                                     required
                                     value={startTime}
                                     onChange={e => setStartTime(e.target.value)}
-                                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:border-primary/50 transition-colors"
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-2 text-sm md:text-base text-white focus:outline-none focus:border-primary/50 transition-colors"
                                 />
                             </div>
-                            <ArrowRight className="w-4 h-4 text-white/30" />
+                            <ArrowRight className="w-4 h-4 text-white/30 flex-shrink-0" />
                             <div className="relative flex-1">
                                 <input
                                     type="time"
                                     required
                                     value={endTime}
                                     onChange={e => setEndTime(e.target.value)}
-                                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-primary/50 transition-colors"
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-sm md:text-base text-white focus:outline-none focus:border-primary/50 transition-colors"
                                 />
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="pt-4 flex justify-end gap-3">
+                <div className="pt-4 flex flex-col sm:flex-row justify-end gap-3">
                     <button
                         type="button"
                         onClick={onClose}
-                        className="bg-transparent text-white/60 hover:text-white px-4 py-2 text-sm font-medium transition-colors"
+                        className="w-full sm:w-auto bg-transparent text-white/60 hover:text-white px-4 py-3 sm:py-2 text-sm font-medium transition-colors border border-white/10 sm:border-0 rounded-xl sm:rounded-none"
                     >
                         Cancelar
                     </button>
                     <button
                         type="submit"
                         disabled={loading}
-                        className="bg-primary hover:bg-primary/90 text-black px-6 py-2 rounded-xl text-sm font-bold shadow-[0_0_20px_rgba(212,175,55,0.2)] transition-all disabled:opacity-50 flex items-center gap-2"
+                        className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-black px-6 py-3 sm:py-2 rounded-xl text-sm font-bold shadow-[0_0_20px_rgba(212,175,55,0.2)] transition-all disabled:opacity-50 flex items-center justify-center gap-2 min-h-[44px]"
                     >
                         {loading ? "Agendando..." : (
                             <>

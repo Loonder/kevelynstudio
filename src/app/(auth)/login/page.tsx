@@ -85,7 +85,7 @@ export default function LoginPage() {
                             type="email"
                             placeholder="Email"
                             required
-                            className="pl-8 h-full w-full bg-transparent border-0 border-b border-white/20 rounded-none px-0 py-4 focus:ring-0 focus:border-[#D4AF37] focus-visible:ring-0 placeholder:text-white/20 text-lg text-white/90 transition-all shadow-none"
+                            className="pl-8 pr-2 h-full w-full bg-transparent border-0 border-b border-white/20 rounded-none py-4 focus:ring-0 focus:border-[#D4AF37] focus-visible:ring-0 placeholder:text-white/20 text-base md:text-lg text-white/90 transition-all shadow-none"
                         />
                     </div>
 
@@ -98,7 +98,7 @@ export default function LoginPage() {
                                 type="password"
                                 placeholder="Senha"
                                 required
-                                className="pl-8 h-full w-full bg-transparent border-0 border-b border-white/20 rounded-none px-0 py-4 focus:ring-0 focus:border-[#D4AF37] focus-visible:ring-0 placeholder:text-white/20 text-lg text-white/90 transition-all shadow-none"
+                                className="pl-8 pr-2 h-full w-full bg-transparent border-0 border-b border-white/20 rounded-none py-4 focus:ring-0 focus:border-[#D4AF37] focus-visible:ring-0 placeholder:text-white/20 text-base md:text-lg text-white/90 transition-all shadow-none"
                             />
                         </div>
                         <div className="flex justify-end pt-1">

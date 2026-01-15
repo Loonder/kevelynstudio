@@ -78,7 +78,7 @@ export function RegisterForm() {
                         type="text"
                         placeholder="Nome Completo"
                         required
-                        className="pl-10 bg-transparent border-b border-white/10 rounded-none pr-0 py-3 focus:ring-0 focus:border-primary placeholder:text-white/20 text-white transition-all"
+                        className="pl-10 pr-4 bg-transparent border-b border-white/10 rounded-none py-3 focus:ring-0 focus:border-primary placeholder:text-white/20 text-base md:text-lg text-white transition-all"
                     />
                 </div>
 
@@ -90,7 +90,7 @@ export function RegisterForm() {
                         type="email"
                         placeholder="Email"
                         required
-                        className="pl-10 bg-transparent border-b border-white/10 rounded-none pr-0 py-3 focus:ring-0 focus:border-primary placeholder:text-white/20 text-white transition-all"
+                        className="pl-10 pr-4 bg-transparent border-b border-white/10 rounded-none py-3 focus:ring-0 focus:border-primary placeholder:text-white/20 text-base md:text-lg text-white transition-all"
                     />
                 </div>
 
@@ -104,7 +104,7 @@ export function RegisterForm() {
                         required
                         onChange={handlePhoneChange}
                         maxLength={15}
-                        className="pl-10 bg-transparent border-b border-white/10 rounded-none pr-0 py-3 focus:ring-0 focus:border-primary placeholder:text-white/20 text-white transition-all"
+                        className="pl-10 pr-4 bg-transparent border-b border-white/10 rounded-none py-3 focus:ring-0 focus:border-primary placeholder:text-white/20 text-base md:text-lg text-white transition-all"
                     />
                 </div>
 
@@ -116,7 +116,7 @@ export function RegisterForm() {
                         type="password"
                         placeholder="Senha"
                         required
-                        className="pl-10 bg-transparent border-b border-white/10 rounded-none pr-0 py-3 focus:ring-0 focus:border-primary placeholder:text-white/20 text-white transition-all"
+                        className="pl-10 pr-4 bg-transparent border-b border-white/10 rounded-none py-3 focus:ring-0 focus:border-primary placeholder:text-white/20 text-base md:text-lg text-white transition-all"
                     />
                 </div>
 
@@ -128,7 +128,7 @@ export function RegisterForm() {
                         type="password"
                         placeholder="Confirmar Senha"
                         required
-                        className="pl-10 bg-transparent border-b border-white/10 rounded-none pr-0 py-3 focus:ring-0 focus:border-primary placeholder:text-white/20 text-white transition-all"
+                        className="pl-10 pr-4 bg-transparent border-b border-white/10 rounded-none py-3 focus:ring-0 focus:border-primary placeholder:text-white/20 text-base md:text-lg text-white transition-all"
                     />
                 </div>
             </div>

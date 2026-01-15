@@ -28,8 +28,8 @@ else
 fi
 
 # 3. Clone/Pull do Repositório
-APP_DIR="/var/www/kevelynstudio"
-REPO_URL="https://github.com/Loonder/kevelynstudio.git"
+APP_DIR="/Loonder/kevelyn-studio"
+REPO_URL="https://github.com/Loonder/kevelyn-studio.git"
 
 if [ -d "$APP_DIR" ]; then
     echo -e "${YELLOW}> Atualizando repositório existente em $APP_DIR...${NC}"
