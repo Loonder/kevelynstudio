@@ -109,7 +109,12 @@ export default function AdminDashboard() {
                     <p className="text-white/50">Visão estratégica do seu negócio.</p>
                 </div>
                 <div>
-                    <span className="text-sm text-white/40 bg-white/5 border border-white/10 px-4 py-2 rounded-full font-serif">
+                    {/* Mobile date format */}
+                    <span className="text-sm text-white/40 bg-white/5 border border-white/10 px-4 py-2 rounded-full font-serif md:hidden">
+                        {format(new Date(), "d MMM", { locale: ptBR })}
+                    </span>
+                    {/* Desktop date format */}
+                    <span className="hidden md:block text-sm text-white/40 bg-white/5 border border-white/10 px-4 py-2 rounded-full font-serif">
                         {format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR })}
                     </span>
                 </div>

@@ -1,10 +1,20 @@
-"use client";
-
-import { PROFESSIONALS } from "@/lib/data-professionals";
+import { db } from "@/lib/db";
+import { professionals as professionalsTable } from "@/db/schema";
+import { desc, eq } from "drizzle-orm";
 import Image from "next/image";
 import { cn } from "@/lib/cn";
 
-export function TeamEditorial() {
+export async function TeamEditorial() {
+    // Fetch professionals from database
+    const professionals = await db.query.professionals.findMany({
+        where: eq(professionalsTable.isActive, true),
+        orderBy: [desc(professionalsTable.createdAt)],
+        limit: 4 // Show max 4 professionals on homepage
+    });
+
+    if (professionals.length === 0) {
+        return null; // Don't show section if no professionals
+    }
     return (
         <section className="py-32 bg-black overflow-hidden">
             <div className="container mx-auto px-6">
@@ -25,18 +35,18 @@ export function TeamEditorial() {
                 {/* Editorial Grid */}
                 <div className="grid md:grid-cols-2 lg:grid-cols-12 gap-8 items-start">
 
-                    {/* Highlight Profile (Kevelyn?) - Mocking first pro as featured */}
-                    {PROFESSIONALS.slice(0, 1).map((prof) => (
+                    {/* Highlight Profile - First professional as featured */}
+                    {professionals.slice(0, 1).map((prof) => (
                         <div key={prof.id} className="lg:col-span-7 relative group cursor-pointer">
                             <div className="aspect-[3/4] relative overflow-hidden grayscale group-hover:grayscale-0 transition-all duration-1000 ease-out">
-                                {prof.image && !prof.image.includes('placeholder') ? (
+                                {prof.imageUrl ? (
                                     <Image
-                                        src={prof.image}
+                                        src={prof.imageUrl}
                                         alt={prof.name}
                                         fill
                                         className="object-cover"
                                         sizes="(max-width: 768px) 100vw, 50vw"
-                                        priority={prof.image.includes('reveal-portrait.jpg')}
+                                        priority
                                     />
                                 ) : (
                                     // Abstract Placeholder
@@ -56,7 +66,7 @@ export function TeamEditorial() {
                                 <h4 className="font-serif text-3xl text-white mb-2">{prof.name}</h4>
                                 <p className="text-primary text-xs uppercase tracking-widest mb-4">{prof.role}</p>
                                 <p className="text-white/50 text-sm leading-relaxed">
-                                    "Minha missão é revelar a versão mais poderosa de cada mulher através de um olhar desenhado com alma."
+                                    {prof.bio || "Especialista dedicada a revelar a versão mais poderosa de cada mulher."}
                                 </p>
                             </div>
                         </div>
@@ -64,11 +74,11 @@ export function TeamEditorial() {
 
                     {/* Secondary List */}
                     <div className="lg:col-span-5 flex flex-col gap-12 mt-12 lg:mt-32">
-                        {PROFESSIONALS.slice(1).map((prof) => (
+                        {professionals.slice(1).map((prof) => (
                             <div key={prof.id} className="flex gap-6 items-center group cursor-pointer">
                                 <div className="w-24 h-32 relative overflow-hidden grayscale group-hover:grayscale-0 transition-all duration-500 shrink-0">
-                                    {prof.image && !prof.image.includes('placeholder') ? (
-                                        <Image src={prof.image} alt={prof.name} fill className="object-cover" sizes="(max-width: 768px) 100vw, 33vw" />
+                                    {prof.imageUrl ? (
+                                        <Image src={prof.imageUrl} alt={prof.name} fill className="object-cover" sizes="(max-width: 768px) 100vw, 33vw" />
                                     ) : (
                                         <div className="w-full h-full bg-[#111]" />
                                     )}
@@ -76,13 +86,10 @@ export function TeamEditorial() {
                                 <div>
                                     <h4 className="font-serif text-2xl text-white group-hover:text-primary transition-colors">{prof.name}</h4>
                                     <p className="text-white/30 text-xs uppercase tracking-widest mb-2">{prof.role}</p>
-                                    <div className="flex gap-2">
-                                        {prof.specialties.map(s => (
-                                            <span key={s} className="text-[10px] text-white/40 border border-white/10 px-2 py-1 rounded-full">
-                                                {s}
-                                            </span>
-                                        ))}
-                                    </div>
+                                    {/* Show bio excerpt if available */}
+                                    {prof.bio && (
+                                        <p className="text-white/40 text-xs line-clamp-2">{prof.bio}</p>
+                                    )}
                                 </div>
                             </div>
                         ))}
