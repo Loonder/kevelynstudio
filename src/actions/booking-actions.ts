@@ -10,24 +10,13 @@ export type BookingInput = {
     professionalId: string;
     date: Date;
     timeSlot: string;
-    client: {
-        name: string;
-        email: string;
-        phone: string;
-        birthDate?: string; // Format YYYY-MM-DD
-    };
-    sensory: {
-        musicGenre: string;
-        drink: string;
-    }
+    clientId: string; // Now we expect authenticated client ID
+    phone?: string; // Optional phone update
 };
 
 export async function createAppointment(data: BookingInput) {
     try {
-
-
         // 1. Calculate Start/End Time
-        // timeSlot is "09:00", date is Date object
         const [hours, minutes] = data.timeSlot.split(':').map(Number);
 
         const startTime = new Date(data.date);
@@ -42,16 +31,12 @@ export async function createAppointment(data: BookingInput) {
 
         const endTime = new Date(startTime.getTime() + (service.durationMinutes * 60000));
 
-        // 1.5 CHECK AVAILABILITY (Conflict Detection)
-        // Overlap logic: (StartA < EndB) and (EndA > StartB)
+        // 2. CHECK AVAILABILITY (Conflict Detection)
         const conflict = await db.query.appointments.findFirst({
             where: and(
                 eq(appointments.professionalId, data.professionalId),
-                // New appointment starts before existing ends
                 lt(appointments.startTime, endTime),
-                // New appointment ends after existing starts
                 gt(appointments.endTime, startTime),
-                // Exclude cancelled
                 ne(appointments.status, 'cancelled')
             )
         });
@@ -60,61 +45,27 @@ export async function createAppointment(data: BookingInput) {
             return { success: false, error: "Este horário já foi reservado por outra cliente. Por favor, escolha outro." };
         }
 
-        // 2. Find or Create Client
-        // We link by email. If exists, we update preferences.
-        let clientId: string;
-
-        const existingClient = await db.query.clients.findFirst({
-            where: eq(clients.email, data.client.email)
-        });
-
-        // Parse birthDate
-        const birthDate = data.client.birthDate ? new Date(data.client.birthDate) : undefined;
-
-        if (existingClient) {
-            clientId = existingClient.id;
-            // Update preferences if they changed
+        // 3. Update phone if provided
+        if (data.phone) {
             await db.update(clients)
-                .set({
-                    phone: data.client.phone,
-                    birthDate: birthDate || existingClient.birthDate, // Only update if provided
-                    sensoryPreferences: {
-                        favoriteMusic: data.sensory.musicGenre,
-                        drinkPreference: data.sensory.drink as any,
-                        // We reserve other fields
-                    }
-                })
-                .where(eq(clients.id, clientId));
-        } else {
-            const newClient = await db.insert(clients).values({
-                fullName: data.client.name,
-                email: data.client.email,
-                phone: data.client.phone,
-                birthDate: birthDate,
-                sensoryPreferences: {
-                    favoriteMusic: data.sensory.musicGenre,
-                    drinkPreference: data.sensory.drink as any,
-                }
-            }).returning({ id: clients.id });
-
-            clientId = newClient[0].id;
+                .set({ phone: data.phone })
+                .where(eq(clients.id, data.clientId));
         }
 
-        // 3. Create Appointment
+        // 4. Create Appointment
         const newAppointment = await db.insert(appointments).values({
-            clientId,
+            clientId: data.clientId,
             professionalId: data.professionalId,
             serviceId: data.serviceId,
             startTime,
             endTime,
-            status: "confirmed", // Auto-confirm for MVP demo, usually pending
+            status: "confirmed",
         }).returning();
 
-
-
-        // Revalidate admin dashboard so it shows up immediately
+        // Revalidate admin dashboard
         revalidatePath('/admin');
         revalidatePath('/(reception)/dashboard');
+        revalidatePath('/my-appointments');
 
         return { success: true, appointmentId: newAppointment[0].id };
 

@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { LuxuryButton } from "@/components/ui/luxury-button";
 import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, Filter, Users } from "lucide-react";
 import { CreateAppointmentModal } from "./create-appointment-modal";
+import { AppointmentDetailModal } from "./appointment-detail-modal";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import "react-big-calendar/lib/addons/dragAndDrop/styles.css";
 
@@ -217,6 +218,23 @@ export function AdminCalendar({ initialEvents, resources, clients, services }: A
         newEnd: null,
         resourceId: null,
     });
+
+    // Detail Modal State
+    const [detailModal, setDetailModal] = useState<{
+        isOpen: boolean;
+        appointment: any | null;
+    }>({
+        isOpen: false,
+        appointment: null,
+    });
+
+    // Handle clicking on an event to view details
+    const handleSelectEvent = useCallback((event: any) => {
+        setDetailModal({
+            isOpen: true,
+            appointment: event,
+        });
+    }, []);
 
     // Filtered Events Logic
     const filteredEvents = useMemo(() => {
@@ -473,6 +491,7 @@ export function AdminCalendar({ initialEvents, resources, clients, services }: A
                         onEventDrop={onEventDrop}
                         onEventResize={onEventDrop}
                         onSelectSlot={handleSelectSlot}
+                        onSelectEvent={handleSelectEvent}
                         eventPropGetter={eventPropGetter}
                         components={components}
                         culture="pt-BR"
@@ -534,6 +553,13 @@ export function AdminCalendar({ initialEvents, resources, clients, services }: A
                 onSuccess={() => {
                     window.location.reload();
                 }}
+            />
+
+            {/* Appointment Detail Modal */}
+            <AppointmentDetailModal
+                appointment={detailModal.appointment}
+                open={detailModal.isOpen}
+                onOpenChange={(open) => setDetailModal(prev => ({ ...prev, isOpen: open }))}
             />
         </div>
     )

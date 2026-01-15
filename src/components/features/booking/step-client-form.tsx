@@ -3,34 +3,73 @@
 import { useBooking } from "@/context/booking-context";
 import { GlassCard } from "@/components/ui/glass-card";
 import { ChevronRight } from "lucide-react";
-import { useState } from "react";
-import { cn } from "@/lib/cn";
+import { useState, useEffect } from "react";
 import { createAppointment } from "@/actions/booking-actions";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 
 export function StepClientForm() {
-    const { state, setClientData, setSensory, prevStep } = useBooking();
+    const { state, prevStep } = useBooking();
     const router = useRouter();
 
-    // Local state for form handling before submitting to context
     const [formData, setFormData] = useState({
-        name: state.clientData.name,
-        email: state.clientData.email,
-        phone: state.clientData.phone,
+        phone: state.clientData.phone || "",
         birthDate: "",
-        music: state.sensory.musicGenre,
-        drink: state.sensory.drink
     });
 
-    const handleChange = (field: string, value: string) => {
-        setFormData(prev => ({ ...prev, [field]: value }));
-    };
+    const [clientInfo, setClientInfo] = useState<{
+        name: string;
+        email: string;
+        clientId: string;
+    } | null>(null);
 
+    const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    useEffect(() => {
+        async function loadClientData() {
+            try {
+                const supabase = createClient();
+                const { data: { user } } = await supabase.auth.getUser();
+
+                if (!user) {
+                    alert("Por favor, faça login para continuar.");
+                    router.push("/login");
+                    return;
+                }
+
+                // Fetch client data from database
+                const response = await fetch(`/api/client/${user.id}`);
+                if (response.ok) {
+                    const client = await response.json();
+                    setClientInfo({
+                        name: client.fullName,
+                        email: client.email,
+                        clientId: client.id
+                    });
+                    setFormData(prev => ({
+                        ...prev,
+                        phone: client.phone || prev.phone
+                    }));
+                }
+            } catch (error) {
+                console.error("Error loading client data:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+
+        loadClientData();
+    }, [router]);
 
     const handleSubmit = async () => {
         if (!state.service || !state.professional || !state.date || !state.timeSlot) {
             alert("Sessão expirada. Reinicie o agendamento.");
+            return;
+        }
+
+        if (!clientInfo) {
+            alert("Erro ao carregar dados do cliente.");
             return;
         }
 
@@ -41,20 +80,13 @@ export function StepClientForm() {
                 professionalId: state.professional.id,
                 date: state.date,
                 timeSlot: state.timeSlot,
-                client: {
-                    name: formData.name,
-                    email: formData.email,
-                    phone: formData.phone
-                },
-                sensory: {
-                    musicGenre: formData.music,
-                    drink: formData.drink
-                }
+                clientId: clientInfo.clientId,
+                phone: formData.phone,
             });
 
             if (result.success) {
                 alert("✨ Agendamento Confirmado! Esperamos por você.");
-                router.push("/");
+                router.push("/my-appointments");
             } else {
                 alert("Erro ao agendar: " + result.error);
             }
@@ -66,93 +98,78 @@ export function StepClientForm() {
         }
     };
 
-    const isValid = formData.name && formData.email && formData.phone;
+    if (isLoading) {
+        return (
+            <div className="max-w-2xl mx-auto text-center">
+                <GlassCard className="p-12">
+                    <div className="animate-pulse">
+                        <div className="h-4 bg-white/10 rounded w-3/4 mx-auto mb-4"></div>
+                        <div className="h-4 bg-white/10 rounded w-1/2 mx-auto"></div>
+                    </div>
+                    <p className="text-white/50 mt-4">Carregando seus dados...</p>
+                </GlassCard>
+            </div>
+        );
+    }
+
+    const isValid = formData.phone && clientInfo;
 
     return (
         <div className="max-w-2xl mx-auto">
             <h2 className="text-3xl font-serif text-white text-center mb-2">Finalizar Agendamento</h2>
-            <p className="text-white/50 text-center mb-10">Preencha seus dados para confirmarmos sua experiência.</p>
+            <p className="text-white/50 text-center mb-10">Confirme seus dados para reservarmos sua experiência.</p>
 
             <GlassCard className="space-y-6 p-8">
                 <div className="space-y-4">
                     <h3 className="text-xs uppercase tracking-widest text-primary mb-4">Dados Pessoais</h3>
-                    <div className="grid md:grid-cols-2 gap-4">
-                        <input
-                            className="bg-white/5 border border-white/10 rounded-lg p-3 text-white placeholder:text-white/20 focus:border-primary outline-none transition-colors"
-                            placeholder="Nome Completo"
-                            value={formData.name}
-                            onChange={(e) => handleChange('name', e.target.value)}
-                        />
-                        <input
-                            className="bg-white/5 border border-white/10 rounded-lg p-3 text-white placeholder:text-white/20 focus:border-primary outline-none transition-colors"
-                            placeholder="Telefone / WhatsApp"
-                            value={formData.phone}
-                            onChange={(e) => handleChange('phone', e.target.value)}
-                        />
+
+                    {/* Read-only Name */}
+                    <div>
+                        <label className="text-xs text-white/40 uppercase tracking-wider mb-2 block">Nome Completo</label>
+                        <div className="bg-white/5 border border-white/10 rounded-lg p-3 text-white/60 cursor-not-allowed">
+                            {clientInfo?.name || "Carregando..."}
+                        </div>
                     </div>
-                    <div className="grid md:grid-cols-2 gap-4">
+
+                    {/* Read-only Email */}
+                    <div>
+                        <label className="text-xs text-white/40 uppercase tracking-wider mb-2 block">E-mail</label>
+                        <div className="bg-white/5 border border-white/10 rounded-lg p-3 text-white/60 cursor-not-allowed">
+                            {clientInfo?.email || "Carregando..."}
+                        </div>
+                    </div>
+
+                    {/* Editable Phone */}
+                    <div>
+                        <label className="text-xs text-white/40 uppercase tracking-wider mb-2 block">Telefone / WhatsApp *</label>
                         <input
                             className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white placeholder:text-white/20 focus:border-primary outline-none transition-colors"
-                            placeholder="E-mail"
-                            type="email"
-                            value={formData.email}
-                            onChange={(e) => handleChange('email', e.target.value)}
+                            placeholder="(00) 00000-0000"
+                            value={formData.phone}
+                            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                            required
                         />
+                    </div>
+
+                    {/* Optional Birth Date */}
+                    <div>
+                        <label className="text-xs text-white/40 uppercase tracking-wider mb-2 block">Data de Nascimento (opcional)</label>
                         <input
                             className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white placeholder:text-white/20 focus:border-primary outline-none transition-colors [color-scheme:dark]"
-                            placeholder="Data de Nascimento"
                             type="date"
-                            value={formData.birthDate || ''}
-                            onChange={(e) => handleChange('birthDate', e.target.value)}
+                            value={formData.birthDate}
+                            onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
                         />
                     </div>
                 </div>
 
-                <div className="pt-6 border-t border-white/10 space-y-8">
-                    <div>
-                        <h3 className="text-xs uppercase tracking-widest text-primary mb-6">Qual será a trilha sonora do seu momento?</h3>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                            {['Pop', 'Jazz', 'Bossa Nova', 'Classic', 'Nature', 'Lounge'].map((style) => (
-                                <button
-                                    key={style}
-                                    type="button"
-                                    onClick={() => handleChange('music', style)}
-                                    className={cn(
-                                        "p-3 rounded-xl border text-sm transition-all",
-                                        formData.music === style
-                                            ? "bg-primary/20 border-primary text-primary"
-                                            : "bg-white/5 border-white/10 text-white/60 hover:border-white/30"
-                                    )}
-                                >
-                                    {style}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div>
-                        <h3 className="text-xs uppercase tracking-widest text-primary mb-6">O que deseja beber ao chegar?</h3>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                            {['Water', 'Coffee', 'Champagne', 'Tea', 'None'].map((drink) => (
-                                <button
-                                    key={drink}
-                                    type="button"
-                                    onClick={() => handleChange('drink', drink)}
-                                    className={cn(
-                                        "p-3 rounded-xl border text-sm transition-all",
-                                        formData.drink === drink
-                                            ? "bg-primary/20 border-primary text-primary"
-                                            : "bg-white/5 border-white/10 text-white/60 hover:border-white/30"
-                                    )}
-                                >
-                                    {drink === 'Water' ? 'Água' : drink === 'Coffee' ? 'Café' : drink === 'Champagne' ? 'Espumante' : drink === 'Tea' ? 'Chá' : 'Nenhuma'}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
+                <div className="pt-4 border-t border-white/10">
+                    <p className="text-xs text-white/40 mb-4">
+                        💡 <span className="text-white/60">Dica:</span> Você pode gerenciar suas preferências de música e bebidas no seu perfil.
+                    </p>
                 </div>
 
-                <div className="pt-8 flex justify-between items-center">
+                <div className="pt-4 flex justify-between items-center">
                     <button onClick={prevStep} className="text-white/50 hover:text-white px-4 transition-colors">
                         Voltar
                     </button>
