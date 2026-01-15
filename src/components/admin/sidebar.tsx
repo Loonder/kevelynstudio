@@ -67,24 +67,16 @@ export function AdminSidebar() {
             </nav>
 
             <div className="p-4 border-t border-white/10">
-                <form action={async () => {
-                    'use server';
-                    // Dynamic import to avoid client-side bundling issues if sticking to server actions strictly
-                    // But simpler: just import the action at top (if this was a server component, but it is 'use client')
-                    // Since it is 'use client', we need to call the imported action differently or use a click handler.
-                    // IMPORTANT: We cannot define 'use server' inside 'use client' file directly in inline closure usually.
-                    // Best pattern for 'use client' button triggering server action:
-                    const { signOutAction } = await import("@/actions/auth-actions");
-                    await signOutAction();
-                }}>
-                    <button
-                        type="submit"
-                        className="flex items-center gap-3 px-4 py-3 w-full text-white/60 hover:text-white hover:bg-white/5 rounded-md transition-colors group"
-                    >
-                        <LogOut className="w-5 h-5 group-hover:text-red-400 transition-colors" />
-                        <span className="text-sm font-medium">Sair</span>
-                    </button>
-                </form>
+                <button
+                    onClick={async () => {
+                        const { signOutAction } = await import("@/actions/auth-actions");
+                        await signOutAction();
+                    }}
+                    className="flex items-center gap-3 px-4 py-3 w-full text-white/60 hover:text-white hover:bg-white/5 rounded-md transition-colors group"
+                >
+                    <LogOut className="w-5 h-5 group-hover:text-red-400 transition-colors" />
+                    <span className="text-sm font-medium">Sair</span>
+                </button>
             </div>
         </aside>
     );
