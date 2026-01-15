@@ -20,16 +20,16 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Kevelyn Studio | Especialista em Olhar e Lábios",
-  description: "Realce sua beleza natural com procedimentos de alto padrão. Micropigmentação, Lash Lifting, Brow Lamination e mais.",
+  title: "Kevelyn Studio | Lash Design e Sobrancelhas",
+  description: "Studio especializado em Lash Design e Sobrancelhas. Realce sua beleza natural com nossas especialistas de alto padrão.",
   icons: {
     icon: "/favicon.png", // Fallback
     shortcut: "/favicon.png",
     apple: "/favicon.png",
   },
   openGraph: {
-    title: "Kevelyn Studio | Especialista em Olhar e Lábios",
-    description: "Realce sua beleza natural com procedimentos de alto padrão.",
+    title: "Kevelyn Studio | Lash Design e Sobrancelhas",
+    description: "Studio especializado em Lash Design e Sobrancelhas.",
     url: "https://kevelynstudio.paulomoraes.cloud",
     siteName: "Kevelyn Studio",
     images: [
