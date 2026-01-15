@@ -35,6 +35,7 @@ interface AdminCalendarProps {
     resources: any[];
     clients: any[];
     services: any[];
+    defaultDate?: Date;
 }
 
 // Custom Toolbar Component
@@ -164,11 +165,11 @@ const CustomEvent = ({ event }: any) => {
     );
 };
 
-export function AdminCalendar({ initialEvents, resources, clients, services }: AdminCalendarProps) {
+export function AdminCalendar({ initialEvents, resources, clients, services, defaultDate = new Date() }: AdminCalendarProps) {
     const calendarRef = useRef<HTMLDivElement>(null);
     const [events, setEvents] = useState(initialEvents);
     const [view, setView] = useState<View>(Views.WEEK);
-    const [date, setDate] = useState(new Date());
+    const [date, setDate] = useState(defaultDate);
     const [selectedProfessionalId, setSelectedProfessionalId] = useState<string>('all');
 
     // Enable mouse wheel scroll on calendar time content

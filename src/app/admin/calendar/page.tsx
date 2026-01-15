@@ -75,6 +75,7 @@ export default async function CalendarPage({
                     resources={resources}
                     clients={allClients}
                     services={allServices}
+                    defaultDate={today}
                 />
             </div>
         </div>
