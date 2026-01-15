@@ -10,7 +10,7 @@ export async function signOutAction() {
     redirect("/login");
 }
 
-export async function loginWithGoogle() {
+export async function loginWithGoogle(formData: FormData) {
     const supabase = await createClient();
     const origin = (await headers()).get("origin");
 
@@ -27,7 +27,7 @@ export async function loginWithGoogle() {
 
     if (error) {
         console.error(error);
-        return { error: error.message };
+        redirect("/login?error=GoogleLoginError");
     }
 
     if (data.url) {
@@ -35,7 +35,7 @@ export async function loginWithGoogle() {
     }
 }
 
-export async function loginWithFacebook() {
+export async function loginWithFacebook(formData: FormData) {
     const supabase = await createClient();
     const origin = (await headers()).get("origin");
     const redirectTo = origin ? `${origin}/api/auth/callback` : undefined;
@@ -49,7 +49,7 @@ export async function loginWithFacebook() {
 
     if (error) {
         console.error(error);
-        return { error: error.message };
+        redirect("/login?error=FacebookLoginError");
     }
 
     if (data.url) {
