@@ -52,40 +52,41 @@ const CustomToolbar = ({
     onDateChange
 }: any) => {
     return (
-        <div className="flex flex-col gap-4 mb-6 border-b border-white/5 pb-6">
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+        <div className="flex flex-col gap-3 mb-2 md:mb-6 border-b border-white/5 pb-4 md:pb-6">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 md:gap-4">
 
                 {/* Navigation & Date */}
-                <div className="flex flex-col sm:flex-row items-center gap-4 w-full lg:w-auto">
-                    <div className="flex items-center bg-black/40 rounded-full p-1 border border-white/5 shadow-inner">
+                <div className="flex flex-row items-center justify-between w-full lg:w-auto gap-2 md:gap-4">
+                    <div className="flex items-center bg-black/40 rounded-full p-1 border border-white/5 shadow-inner scale-90 md:scale-100 origin-left">
                         <button
                             onClick={() => onNavigate(Navigate.PREVIOUS)}
-                            className="p-2 hover:bg-white/5 rounded-full text-white/50 hover:text-[#D4AF37] transition-all"
+                            className="p-1.5 md:p-2 hover:bg-white/5 rounded-full text-white/50 hover:text-[#D4AF37] transition-all"
                         >
-                            <ChevronLeft className="w-5 h-5" />
+                            <ChevronLeft className="w-4 h-4 md:w-5 md:h-5" />
                         </button>
                         <button
                             onClick={() => onNavigate(Navigate.TODAY)}
-                            className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-white/50 hover:text-white transition-all border-x border-white/5 mx-1"
+                            className="px-3 md:px-4 py-1.5 text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-white/50 hover:text-white transition-all border-x border-white/5 mx-1"
                         >
                             Hoje
                         </button>
                         <button
                             onClick={() => onNavigate(Navigate.NEXT)}
-                            className="p-2 hover:bg-white/5 rounded-full text-white/50 hover:text-[#D4AF37] transition-all"
+                            className="p-1.5 md:p-2 hover:bg-white/5 rounded-full text-white/50 hover:text-[#D4AF37] transition-all"
                         >
-                            <ChevronRight className="w-5 h-5" />
+                            <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
                         </button>
                     </div>
 
                     {/* Date Picker Integration */}
-                    <div className="relative group w-full sm:w-auto flex justify-center sm:justify-start">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <div className="relative group flex-1 md:flex-none flex justify-end md:justify-start">
+                        <div className="absolute inset-y-0 right-0 md:left-0 pr-3 md:pl-3 md:pr-0 flex items-center pointer-events-none md:justify-start justify-end sticky-date-icon">
                             <CalendarIcon className="h-4 w-4 text-[#D4AF37]" />
                         </div>
+                        {/* Mobile: Date aligned right, Desktop: Date aligned left */}
                         <input
                             type="date"
-                            className="bg-black/40 text-white/90 text-sm font-medium rounded-full border border-white/10 pl-10 pr-4 py-2 focus:outline-none focus:border-[#D4AF37] appearance-none cursor-pointer hover:bg-white/5 transition-all"
+                            className="bg-black/40 text-white/90 text-xs md:text-sm font-medium rounded-full border border-white/10 pl-4 pr-10 md:pl-10 md:pr-4 py-1.5 md:py-2 focus:outline-none focus:border-[#D4AF37] appearance-none cursor-pointer hover:bg-white/5 transition-all text-right md:text-left w-full md:w-auto"
                             value={format(date, 'yyyy-MM-dd')}
                             onChange={(e) => {
                                 if (e.target.valueAsDate) {
@@ -100,15 +101,15 @@ const CustomToolbar = ({
                 </div>
 
                 {/* Filters & View Switcher */}
-                <div className="flex flex-col sm:flex-row flex-wrap items-center gap-4 w-full lg:w-auto">
+                <div className="flex flex-col sm:flex-row flex-wrap items-center gap-3 w-full lg:w-auto">
 
                     {/* Professional Filter */}
                     <div className="relative w-full sm:w-[200px]">
-                        <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                        <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 md:w-4 md:h-4 text-white/30" />
                         <select
                             value={selectedProfessionalId}
                             onChange={(e) => setSelectedProfessionalId(e.target.value)}
-                            className="w-full bg-[#0A0A0A] border border-white/10 rounded-full py-2 pl-10 pr-8 text-sm text-white/80 focus:outline-none focus:border-[#D4AF37] appearance-none"
+                            className="w-full bg-[#0A0A0A] border border-white/10 rounded-full py-1.5 md:py-2 pl-9 pr-8 text-xs md:text-sm text-white/80 focus:outline-none focus:border-[#D4AF37] appearance-none"
                         >
                             <option value="all">Todos os Profissionais</option>
                             {resources.map((res: any) => (
@@ -124,7 +125,7 @@ const CustomToolbar = ({
                             <button
                                 key={v}
                                 onClick={() => onView(v.toUpperCase())}
-                                className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded-full transition-all duration-300 flex-1 sm:flex-none
+                                className={`px-4 py-1.5 md:py-2 text-[9px] md:text-[10px] font-bold uppercase tracking-widest rounded-full transition-all duration-300 flex-1 sm:flex-none
                                     ${view === v.toUpperCase()
                                         ? 'bg-[#D4AF37] text-black shadow-[0_0_15px_rgba(212,175,55,0.4)] transform scale-105'
                                         : 'text-white/40 hover:text-white hover:bg-white/5'
@@ -344,21 +345,22 @@ export function AdminCalendar({ initialEvents, resources, clients, services, def
     // ... (resto do código anterior permanece igual)
 
     return (
-        <div className="h-[calc(100vh-40px)] flex flex-col gap-6">
-            {/* Header section remains the same... */}
-            <div className="flex flex-col md:flex-row justify-between items-end gap-4 px-1">
+        <div className="h-[calc(100vh-80px)] md:h-[calc(100vh-40px)] flex flex-col gap-4 md:gap-6">
+            {/* Header section optimized for mobile */}
+            <div className="flex flex-row justify-between items-center md:items-end gap-2 px-1">
                 <div>
-                    <h1 className="text-4xl font-serif text-white mb-2">Gestão de Agenda</h1>
-                    <p className="text-white/50 text-sm font-light">
+                    <h1 className="text-2xl md:text-4xl font-serif text-white md:mb-2">Agenda</h1>
+                    <p className="hidden md:block text-white/50 text-sm font-light">
                         Visualize e gerencie seus atendimentos com precisão.
                     </p>
                 </div>
                 <LuxuryButton
                     onClick={() => setCreateModal({ isOpen: true, start: new Date(), end: null })}
-                    className="bg-[#D4AF37] text-black hover:bg-[#b5952f] border-none shadow-[0_0_20px_rgba(212,175,55,0.3)]"
+                    className="bg-[#D4AF37] text-black hover:bg-[#b5952f] border-none shadow-[0_0_20px_rgba(212,175,55,0.3)] px-3 py-2 h-auto text-xs md:text-sm md:px-4 md:py-2"
                 >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Novo Agendamento
+                    <Plus className="w-4 h-4 md:mr-2" />
+                    <span className="hidden md:inline">Novo Agendamento</span>
+                    <span className="md:hidden">Novo</span>
                 </LuxuryButton>
             </div>
 

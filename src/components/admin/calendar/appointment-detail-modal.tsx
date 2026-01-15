@@ -1,6 +1,6 @@
 "use client";
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { GlassCard } from "@/components/ui/glass-card";
 import { User, Phone, Mail, Calendar, Clock, Music, Coffee, Thermometer, Volume2, X } from "lucide-react";
 import { format } from "date-fns";
@@ -49,6 +49,9 @@ export function AppointmentDetailModal({ appointment, open, onOpenChange }: Appo
                 <DialogHeader>
                     <div className="flex items-center justify-between">
                         <DialogTitle className="font-serif text-2xl text-white">Detalhes do Agendamento</DialogTitle>
+                        <DialogDescription className="sr-only">
+                            Detalhes completos do agendamento, incluindo serviço, profissional e cliente.
+                        </DialogDescription>
                         <div className={`px-3 py-1 rounded-full text-xs font-medium border ${statusColors[appointment.status as keyof typeof statusColors]}`}>
                             {statusLabels[appointment.status as keyof typeof statusLabels]}
                         </div>
