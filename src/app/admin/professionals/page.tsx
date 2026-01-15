@@ -4,7 +4,8 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { LuxuryButton } from "@/components/ui/luxury-button";
 import { ProfessionalModal } from "@/components/admin/professionals/professional-modal";
 import { ProfessionalStatusToggle } from "@/components/admin/professionals/professional-status-toggle"; // Separate client component for switch
-import { Plus, User } from "lucide-react";
+import { DeleteProfessionalButton } from "@/components/admin/professionals/delete-professional-button";
+import { Plus, User, Pencil } from "lucide-react";
 import Image from "next/image";
 
 export default async function ProfessionalsPage() {
@@ -86,7 +87,25 @@ export default async function ProfessionalsPage() {
                             <span className={`text-xs font-medium ${pro.isActive ? "text-green-400" : "text-white/30"}`}>
                                 {pro.isActive ? "Ativo" : "Inativo"}
                             </span>
-                            <ProfessionalStatusToggle professional={pro} />
+                            <div className="flex items-center gap-1">
+                                <ProfessionalStatusToggle professional={pro} />
+
+                                {/* Edit Button */}
+                                <ProfessionalModal
+                                    professional={pro}
+                                    trigger={
+                                        <button className="p-2 hover:bg-white/5 rounded-full transition-colors group">
+                                            <Pencil className="w-4 h-4 text-white/40 group-hover:text-[#D4AF37]" />
+                                        </button>
+                                    }
+                                />
+
+                                {/* Delete Button */}
+                                <DeleteProfessionalButton
+                                    professionalId={pro.id}
+                                    professionalName={pro.name}
+                                />
+                            </div>
                         </div>
                     </GlassCard>
                 ))}

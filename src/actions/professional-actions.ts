@@ -43,6 +43,7 @@ export async function createProfessional(data: Omit<ProfessionalInput, 'id'>) {
         revalidatePath("/admin/professionals");
         revalidatePath("/admin/team");
         revalidatePath("/admin/calendar");
+        revalidatePath("/"); // Homepage TeamEditorial
         return { success: true };
     } catch (error) {
         console.error("Create Professional Error:", error);
@@ -76,6 +77,7 @@ export async function updateProfessional(id: string, data: Omit<ProfessionalInpu
         revalidatePath("/admin/professionals");
         revalidatePath("/admin/team");
         revalidatePath("/admin/calendar");
+        revalidatePath("/"); // Homepage TeamEditorial
         return { success: true };
     } catch (error) {
         console.error("Update Professional Error:", error);
@@ -91,6 +93,7 @@ export async function updateProfessionalStatus(id: string, isActive: boolean) {
 
         revalidatePath("/admin/professionals");
         revalidatePath("/admin/calendar");
+        revalidatePath("/"); // Homepage TeamEditorial
         return { success: true };
     } catch (error) {
         return { error: "Erro ao atualizar status." };
@@ -102,6 +105,7 @@ export async function deleteProfessional(id: string) {
         await db.delete(professionals).where(eq(professionals.id, id));
         revalidatePath("/admin/professionals");
         revalidatePath("/admin/calendar");
+        revalidatePath("/"); // Homepage TeamEditorial
         return { success: true };
     } catch (error) {
         return { error: "Erro ao excluir profissional." };

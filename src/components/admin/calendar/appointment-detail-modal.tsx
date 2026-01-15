@@ -195,9 +195,21 @@ export function AppointmentDetailModal({ appointment, open, onOpenChange }: Appo
                 <div className="mt-6 pt-6 border-t border-white/10 flex justify-end gap-3">
                     <button
                         onClick={() => onOpenChange(false)}
-                        className="px-4 py-2 text-white/60 hover:text-white transition-colors"
+                        className="px-6 py-2 text-white/60 hover:text-white transition-colors"
                     >
                         Fechar
+                    </button>
+                    <button
+                        onClick={() => {
+                            onOpenChange(false);
+                            // Parent component should handle opening edit modal
+                            if ((window as any).openEditAppointmentModal) {
+                                (window as any).openEditAppointmentModal(appointment);
+                            }
+                        }}
+                        className="px-6 py-2 bg-primary hover:bg-primary/90 text-black rounded-xl font-bold transition-all"
+                    >
+                        Editar
                     </button>
                 </div>
             </DialogContent>

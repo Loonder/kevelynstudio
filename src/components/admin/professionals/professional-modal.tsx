@@ -1,17 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { LuxuryButton } from "@/components/ui/luxury-button";
-import { createProfessional } from "@/actions/professional-actions";
+import { createProfessional, updateProfessional } from "@/actions/professional-actions";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface ProfessionalModalProps {
     trigger?: React.ReactNode;
+    professional?: {
+        id: string;
+        name: string;
+        role: string;
+        bio: string | null;
+        color: string | null;
+    };
 }
 
 const COLORS = [
@@ -23,11 +30,21 @@ const COLORS = [
     { name: "Red", value: "#EF4444", class: "bg-[#EF4444]" },
 ];
 
-export function ProfessionalModal({ trigger }: ProfessionalModalProps) {
+export function ProfessionalModal({ trigger, professional }: ProfessionalModalProps) {
     const [open, setOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const [selectedColor, setSelectedColor] = useState(COLORS[0].value);
+    const [selectedColor, setSelectedColor] = useState(professional?.color || COLORS[0].value);
     const router = useRouter();
+    const isEdit = !!professional;
+
+    // Reset form when opening/closing
+    useEffect(() => {
+        if (open && professional) {
+            setSelectedColor(professional.color || COLORS[0].value);
+        } else if (!open && !professional) {
+            setSelectedColor(COLORS[0].value);
+        }
+    }, [open, professional]);
 
     async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -45,12 +62,14 @@ export function ProfessionalModal({ trigger }: ProfessionalModalProps) {
         };
 
         try {
-            const result = await createProfessional(data);
+            const result = isEdit
+                ? await updateProfessional(professional.id, data)
+                : await createProfessional(data);
 
             if (result.error) {
                 toast.error(result.error);
             } else {
-                toast.success("Profissional adicionada!");
+                toast.success(isEdit ? "Profissional atualizada!" : "Profissional adicionada!");
                 setOpen(false);
                 router.refresh();
             }
@@ -74,7 +93,7 @@ export function ProfessionalModal({ trigger }: ProfessionalModalProps) {
             <DialogContent className="bg-[#0A0A0A] border rounded-xl border-white/10 text-white sm:max-w-md shadow-2xl">
                 <DialogHeader>
                     <DialogTitle className="font-serif text-2xl text-[#D4AF37] text-center mb-2">
-                        Novo Membro
+                        {isEdit ? "Editar Membro" : "Novo Membro"}
                     </DialogTitle>
                 </DialogHeader>
 
@@ -84,6 +103,7 @@ export function ProfessionalModal({ trigger }: ProfessionalModalProps) {
                         <Input
                             name="name"
                             required
+                            defaultValue={professional?.name}
                             className="bg-white/5 border-white/10 text-white focus:border-[#D4AF37] h-12"
                             placeholder="Ex: Kevelyn Costa"
                         />
@@ -94,6 +114,7 @@ export function ProfessionalModal({ trigger }: ProfessionalModalProps) {
                         <Input
                             name="role"
                             required
+                            defaultValue={professional?.role}
                             className="bg-white/5 border-white/10 text-white focus:border-[#D4AF37] h-12"
                             placeholder="Ex: Master Lash Designer"
                         />
@@ -121,6 +142,7 @@ export function ProfessionalModal({ trigger }: ProfessionalModalProps) {
                         <label className="text-xs text-white/50 uppercase tracking-widest">Bio (Opcional)</label>
                         <Textarea
                             name="bio"
+                            defaultValue={professional?.bio || ""}
                             className="bg-white/5 border-white/10 text-white focus:border-[#D4AF37] min-h-[80px]"
                             placeholder="Breve descrição sobre a profissional..."
                         />
@@ -128,7 +150,7 @@ export function ProfessionalModal({ trigger }: ProfessionalModalProps) {
 
                     <div className="pt-4">
                         <LuxuryButton type="submit" isLoading={isLoading} className="w-full justify-center bg-[#D4AF37] text-black hover:bg-[#b5952f]">
-                            Salvar Profissional
+                            {isEdit ? "Atualizar Profissional" : "Salvar Profissional"}
                         </LuxuryButton>
                     </div>
                 </form>
