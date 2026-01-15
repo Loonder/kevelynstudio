@@ -154,12 +154,12 @@ const CustomEvent = ({ event }: any) => {
     };
 
     return (
-        <div className="flex flex-col h-full justify-center px-1">
-            <div className="text-[10px] font-bold opacity-80 uppercase tracking-wider truncate flex items-center gap-1">
-                <span>{getIcon(event.category)}</span>
-                {event.serviceTitle}
+        <div className="flex flex-col h-full justify-center px-0.5 md:px-1">
+            <div className="text-[8px] md:text-[10px] font-bold opacity-80 uppercase tracking-wider truncate flex items-center gap-0.5 md:gap-1">
+                <span className="text-[10px] md:text-xs">{getIcon(event.category)}</span>
+                <span className="truncate">{event.serviceTitle}</span>
             </div>
-            <div className="text-xs font-medium truncate">
+            <div className="text-[10px] md:text-xs font-medium truncate">
                 {event.clientName}
             </div>
         </div>
@@ -169,7 +169,16 @@ const CustomEvent = ({ event }: any) => {
 export function AdminCalendar({ initialEvents, resources, clients, services, defaultDate = new Date() }: AdminCalendarProps) {
     const calendarRef = useRef<HTMLDivElement>(null);
     const [events, setEvents] = useState(initialEvents);
-    const [view, setView] = useState<View>(Views.WEEK);
+
+    // Detectar view inicial baseado no tamanho da tela
+    const getInitialView = () => {
+        if (typeof window !== 'undefined') {
+            return window.innerWidth < 768 ? Views.DAY : Views.WEEK;
+        }
+        return Views.WEEK;
+    };
+
+    const [view, setView] = useState<View>(getInitialView);
     const [date, setDate] = useState(defaultDate);
     const [selectedProfessionalId, setSelectedProfessionalId] = useState<string>('all');
 
@@ -345,7 +354,7 @@ export function AdminCalendar({ initialEvents, resources, clients, services, def
     // ... (resto do código anterior permanece igual)
 
     return (
-        <div className="h-[calc(100vh-80px)] md:h-[calc(100vh-40px)] flex flex-col gap-4 md:gap-6">
+        <div className="h-[calc(100vh-60px)] md:h-[calc(100vh-40px)] flex flex-col gap-2 md:gap-6">
             {/* Header section optimized for mobile */}
             <div className="flex flex-row justify-between items-center md:items-end gap-2 px-1">
                 <div>
@@ -365,7 +374,7 @@ export function AdminCalendar({ initialEvents, resources, clients, services, def
             </div>
 
             {/* MAIN CALENDAR CONTAINER - CORREÇÃO AQUI */}
-            <div className="flex-1 bg-[#0A0A0A]/80 backdrop-blur-md border border-white/5 rounded-xl p-6 shadow-2xl relative flex flex-col min-h-0">
+            <div className="flex-1 bg-[#0A0A0A]/80 backdrop-blur-md border border-white/5 rounded-xl p-2 md:p-6 shadow-2xl relative flex flex-col min-h-0">
                 <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
 
                 <style>{`
@@ -374,11 +383,11 @@ export function AdminCalendar({ initialEvents, resources, clients, services, def
 
   /* --- 2. CABEÇALHO (DIAS DA SEMANA) --- */
   .rbc-header { 
-    padding: 16px 0; 
+    padding: 12px 4px; 
     font-family: var(--font-serif); 
-    font-size: 0.9rem; 
+    font-size: 0.65rem; 
     text-transform: uppercase; 
-    letter-spacing: 0.25em; 
+    letter-spacing: 0.15em; 
     color: #D4AF37; 
     border-bottom: 1px solid rgba(255,255,255,0.05); 
     font-weight: 500;
@@ -387,6 +396,16 @@ export function AdminCalendar({ initialEvents, resources, clients, services, def
     background: transparent !important;
     flex: 1 1 0px !important;
   }
+  
+  /* Desktop - headers maiores */
+  @media (min-width: 768px) {
+    .rbc-header {
+      padding: 16px 0;
+      font-size: 0.9rem;
+      letter-spacing: 0.25em;
+    }
+  }
+  
   .rbc-header + .rbc-header { border-left: none; }
 
   /* Remover fundo das colunas de horário à esquerda */
@@ -402,9 +421,16 @@ export function AdminCalendar({ initialEvents, resources, clients, services, def
   
   .rbc-timeslot-group { 
     border-bottom: 1px solid rgba(255,255,255,0.02); 
-    min-height: 80px; /* Altura de cada hora */
+    min-height: 60px; /* Altura de cada hora - menor no mobile */
     background: transparent !important; 
-  } 
+  }
+  
+  /* Desktop - timeslots maiores */
+  @media (min-width: 768px) {
+    .rbc-timeslot-group {
+      min-height: 80px;
+    }
+  }
   
   .rbc-time-content { border-top: 1px solid rgba(255,255,255,0.05); border-left: none; }
 
@@ -412,13 +438,21 @@ export function AdminCalendar({ initialEvents, resources, clients, services, def
   .rbc-time-gutter .rbc-timeslot-group { 
     border-bottom: 1px solid rgba(255,255,255,0.02); 
     color: #71717a; 
-    font-size: 0.70rem; 
+    font-size: 0.60rem; 
     display: flex; 
     align-items: center; 
     justify-content: right; 
-    padding-right: 12px;
+    padding-right: 8px;
     background: transparent !important;
   }
+  
+  @media (min-width: 768px) {
+    .rbc-time-gutter .rbc-timeslot-group {
+      font-size: 0.70rem;
+      padding-right: 12px;
+    }
+  }
+  
   .rbc-day-bg + .rbc-day-bg { border-left: 1px solid rgba(255,255,255,0.02); }
 
   /* Fundos transparentes */
@@ -453,10 +487,16 @@ export function AdminCalendar({ initialEvents, resources, clients, services, def
     overflow-x: auto; /* Permitir scroll horizontal se necessário no mobile */
   }
 
-  /* O Cabeçalho (Time Header) não deve encolher nem crescer */
+  /* O Cabeçalho (Time Header) - responsivo */
   .rbc-time-header { 
     flex: 0 0 auto; 
-    min-width: 600px; /* Garante largura mínima para não espremer os dias no mobile */
+    min-width: 100%; /* Mobile: 100% */
+  }
+  
+  @media (min-width: 768px) {
+    .rbc-time-header {
+      min-width: 600px; /* Desktop: largura mínima maior */
+    }
   }
 
   /* O Conteúdo (Time Content) é O ÚNICO que deve ter scroll */
@@ -466,13 +506,12 @@ export function AdminCalendar({ initialEvents, resources, clients, services, def
     overflow-x: auto; /* Scroll horizontal sincronizado */
     border-top: 1px solid rgba(255,255,255,0.05); 
     width: 100%;
-    min-width: 600px; /* Garante largura mínima para não espremer os dias no mobile */
+    min-width: 100%; /* Mobile: 100% */
   }
-
-  /* Ajustes para telas pequenas */
-  @media (max-width: 768px) {
-    .rbc-time-view, .rbc-time-header, .rbc-time-content {
-       min-width: 100%; /* No mobile, deixa ocupar 100% mas com scroll se precisar */
+  
+  @media (min-width: 768px) {
+    .rbc-time-content {
+      min-width: 600px; /* Desktop: largura mínima maior */
     }
   }
 
@@ -484,6 +523,37 @@ export function AdminCalendar({ initialEvents, resources, clients, services, def
     border-radius: 10px; 
   }
   .rbc-time-content::-webkit-scrollbar-thumb:hover { background: rgba(212,175,55,0.6); }
+  
+  /* --- 5. EVENTOS - Melhor exibição no mobile --- */
+  .rbc-event {
+    padding: 2px 4px !important;
+  }
+  
+  @media (min-width: 768px) {
+    .rbc-event {
+      padding: 4px 8px !important;
+    }
+  }
+  
+  .rbc-event-label {
+    font-size: 0.65rem !important;
+  }
+  
+  @media (min-width: 768px) {
+    .rbc-event-label {
+      font-size: 0.75rem !important;
+    }
+  }
+  
+  .rbc-event-content {
+    font-size: 0.70rem !important;
+  }
+  
+  @media (min-width: 768px) {
+    .rbc-event-content {
+      font-size: 0.875rem !important;
+    }
+  }
 `}</style>
 
                 <div ref={calendarRef} className="relative z-10 h-full flex flex-col min-h-0">
