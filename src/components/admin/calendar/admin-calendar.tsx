@@ -51,11 +51,11 @@ const CustomToolbar = ({
     onDateChange
 }: any) => {
     return (
-        <div className="flex flex-col gap-6 mb-8 border-b border-white/5 pb-6">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="flex flex-col gap-4 mb-6 border-b border-white/5 pb-6">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
 
                 {/* Navigation & Date */}
-                <div className="flex items-center gap-4">
+                <div className="flex flex-col sm:flex-row items-center gap-4 w-full lg:w-auto">
                     <div className="flex items-center bg-black/40 rounded-full p-1 border border-white/5 shadow-inner">
                         <button
                             onClick={() => onNavigate(Navigate.PREVIOUS)}
@@ -78,7 +78,7 @@ const CustomToolbar = ({
                     </div>
 
                     {/* Date Picker Integration */}
-                    <div className="relative group">
+                    <div className="relative group w-full sm:w-auto flex justify-center sm:justify-start">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <CalendarIcon className="h-4 w-4 text-[#D4AF37]" />
                         </div>
@@ -99,10 +99,10 @@ const CustomToolbar = ({
                 </div>
 
                 {/* Filters & View Switcher */}
-                <div className="flex flex-wrap items-center gap-4">
+                <div className="flex flex-col sm:flex-row flex-wrap items-center gap-4 w-full lg:w-auto">
 
                     {/* Professional Filter */}
-                    <div className="relative min-w-[200px]">
+                    <div className="relative w-full sm:w-[200px]">
                         <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
                         <select
                             value={selectedProfessionalId}
@@ -118,12 +118,12 @@ const CustomToolbar = ({
                     </div>
 
                     {/* View Switcher */}
-                    <div className="flex bg-black/40 rounded-full p-1 border border-white/5">
+                    <div className="flex bg-black/40 rounded-full p-1 border border-white/5 w-full sm:w-auto justify-center">
                         {['month', 'week', 'day'].map((v) => (
                             <button
                                 key={v}
                                 onClick={() => onView(v.toUpperCase())}
-                                className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded-full transition-all duration-300
+                                className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded-full transition-all duration-300 flex-1 sm:flex-none
                                     ${view === v.toUpperCase()
                                         ? 'bg-[#D4AF37] text-black shadow-[0_0_15px_rgba(212,175,55,0.4)] transform scale-105'
                                         : 'text-white/40 hover:text-white hover:bg-white/5'
@@ -429,7 +429,7 @@ export function AdminCalendar({ initialEvents, resources, clients, services }: A
   /* Esconder Toolbar padrão (pois criamos a nossa) */
   .rbc-toolbar { display: none !important; } 
 
-  /* --- 4. CORREÇÃO CRÍTICA DO SCROLL --- */
+  /* --- 4. CORREÇÃO CRÍTICA DO SCROLL & RESPONSIVIDADE --- */
 
   /* O container raiz do calendário deve ocupar 100% da altura do pai flexivel */
   .rbc-calendar { 
@@ -445,26 +445,36 @@ export function AdminCalendar({ initialEvents, resources, clients, services }: A
     display: flex !important; 
     flex-direction: column; 
     height: 100% !important; 
-    min-height: 0; /* Obrigatório para o Firefox/Chrome entenderem o limite */
+    min-height: 0; 
     width: 100%;
+    overflow-x: auto; /* Permitir scroll horizontal se necessário no mobile */
   }
 
   /* O Cabeçalho (Time Header) não deve encolher nem crescer */
   .rbc-time-header { 
     flex: 0 0 auto; 
+    min-width: 600px; /* Garante largura mínima para não espremer os dias no mobile */
   }
 
   /* O Conteúdo (Time Content) é O ÚNICO que deve ter scroll */
   .rbc-time-content { 
     flex: 1 1 0% !important; 
-    overflow-y: auto !important; /* Força a barra de rolagem aparecer */
-    overflow-x: hidden;
+    overflow-y: auto !important; 
+    overflow-x: auto; /* Scroll horizontal sincronizado */
     border-top: 1px solid rgba(255,255,255,0.05); 
     width: 100%;
+    min-width: 600px; /* Garante largura mínima para não espremer os dias no mobile */
+  }
+
+  /* Ajustes para telas pequenas */
+  @media (max-width: 768px) {
+    .rbc-time-view, .rbc-time-header, .rbc-time-content {
+       min-width: 100%; /* No mobile, deixa ocupar 100% mas com scroll se precisar */
+    }
   }
 
   /* Customização da Barra de Rolagem (Scrollbar) */
-  .rbc-time-content::-webkit-scrollbar { width: 6px; }
+  .rbc-time-content::-webkit-scrollbar { width: 6px; height: 6px; }
   .rbc-time-content::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); }
   .rbc-time-content::-webkit-scrollbar-thumb { 
     background: rgba(255,255,255,0.15); 
