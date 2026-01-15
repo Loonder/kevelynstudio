@@ -92,10 +92,15 @@ function BlockRenderer({ block }: { block: Block }) {
 }
 
 export async function generateStaticParams() {
-    const posts = await db.select({ slug: blogPosts.slug }).from(blogPosts).where(eq(blogPosts.published, true));
-    return posts.map((post) => ({
-        slug: post.slug,
-    }));
+    try {
+        const posts = await db.select({ slug: blogPosts.slug }).from(blogPosts).where(eq(blogPosts.published, true));
+        return posts.map((post) => ({
+            slug: post.slug,
+        }));
+    } catch (error) {
+        console.warn("⚠️ Failed to load blog posts during build (generateStaticParams). Skipping static generation for posts.", error);
+        return [];
+    }
 }
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
