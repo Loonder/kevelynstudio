@@ -7,7 +7,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { GlassCard } from "@/components/ui/glass-card";
 import { LuxuryButton } from "@/components/ui/luxury-button";
-import { Calendar, Clock, Star, History } from "lucide-react";
+import { Calendar, Clock, Star, History, ArrowLeft } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -105,6 +105,9 @@ export default async function MyAppointmentsPage() {
 
                 {/* Header */}
                 <div className="mb-10 text-center md:text-left">
+                    <Link href="/" className="inline-flex items-center text-white/40 hover:text-primary transition-colors mb-4 text-xs uppercase tracking-widest">
+                        <ArrowLeft className="w-3 h-3 mr-2" /> Voltar para Início
+                    </Link>
                     <h1 className="text-3xl md:text-4xl font-serif text-white mb-2">
                         Olá, <span className="text-primary">{client.fullName.split(' ')[0]}</span>
                     </h1>

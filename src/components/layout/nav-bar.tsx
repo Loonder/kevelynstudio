@@ -104,6 +104,15 @@ export function NavBar() {
                                                 <CalendarHeart className="w-4 h-4" />
                                                 Meus Agendamentos
                                             </Link>
+                                            <button
+                                                onClick={async () => {
+                                                    const { signOutAction } = await import("@/actions/auth-actions");
+                                                    await signOutAction();
+                                                }}
+                                                className="text-white/60 hover:text-red-400 transition-colors text-sm uppercase tracking-widest font-light"
+                                            >
+                                                Sair
+                                            </button>
                                         </div>
                                     )
                                 ) : (
@@ -158,14 +167,25 @@ export function NavBar() {
                                             Painel Admin
                                         </Link>
                                     ) : (
-                                        <Link
-                                            href="/my-appointments"
-                                            className={`${ctaStyles} justify-center w-full max-w-xs mx-auto`}
-                                            onClick={() => setMobileMenuOpen(false)}
-                                        >
-                                            <CalendarHeart className="w-4 h-4" />
-                                            Meus Agendamentos
-                                        </Link>
+                                        <>
+                                            <Link
+                                                href="/my-appointments"
+                                                className={`${ctaStyles} justify-center w-full max-w-xs mx-auto`}
+                                                onClick={() => setMobileMenuOpen(false)}
+                                            >
+                                                <CalendarHeart className="w-4 h-4" />
+                                                Meus Agendamentos
+                                            </Link>
+                                            <button
+                                                onClick={async () => {
+                                                    const { signOutAction } = await import("@/actions/auth-actions");
+                                                    await signOutAction();
+                                                }}
+                                                className="text-white/60 hover:text-red-400 transition-colors text-sm uppercase tracking-widest font-light mt-4"
+                                            >
+                                                Sair
+                                            </button>
+                                        </>
                                     )
                                 ) : (
                                     <Link
