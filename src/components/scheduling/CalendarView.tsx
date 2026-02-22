@@ -1,8 +1,8 @@
-// @ts-nocheck
 "use client";
 
 import React, { useState, useCallback } from "react";
 import { Calendar, dateFnsLocalizer, Views, View } from "react-big-calendar";
+// @ts-ignore
 import withDragAndDrop from "react-big-calendar/lib/addons/dragAndDrop";
 import { format, parse, startOfWeek, getDay } from "date-fns";
 import { enUS } from "date-fns/locale";
