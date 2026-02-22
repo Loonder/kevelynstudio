@@ -1,26 +1,33 @@
 
 import Link from "next/link";
-import { db } from "../../../lib/db";
-import { blogPosts } from "../../../db/schema";
-import { desc } from "drizzle-orm";
+import { supabase } from "../../../lib/supabase-client";
 import PublicLayout from "../../../components/layout/PublicLayout";
 
 export const revalidate = 60;
+
+const TENANT_ID = process.env.TENANT_ID || 'kevelyn_studio';
 
 interface BlogPost {
     id: string;
     slug: string;
     title: string;
     excerpt: string | null;
-    coverImage: string | null;
+    cover_image: string | null;
     category: string | null;
-    createdAt: Date | null;
+    created_at: string | null;
 }
 
 export default async function BlogPage() {
     let posts: BlogPost[] = [];
     try {
-        posts = await db.select().from(blogPosts).orderBy(desc(blogPosts.createdAt));
+        const { data, error } = await supabase
+            .from('blog_posts')
+            .select('*')
+            .eq('tenant_id', TENANT_ID)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        posts = data || [];
     } catch (e) {
         console.error("Failed to fetch posts", e);
     }
@@ -46,7 +53,7 @@ export default async function BlogPage() {
                                 <div className="grid md:grid-cols-2 gap-8 border border-white/10 hover:border-primary/30 transition-all duration-500">
                                     <div className="aspect-[4/3] overflow-hidden">
                                         <img
-                                            src={posts[0].coverImage || "/images/generated/hero_lashes_1769449267789.png"}
+                                            src={posts[0].cover_image || "/images/generated/hero_lashes_1769449267789.png"}
                                             alt={posts[0].title}
                                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                                         />
@@ -71,7 +78,7 @@ export default async function BlogPage() {
                                 <article className="border border-white/10 bg-black hover:border-primary/30 transition-all duration-500">
                                     <div className="aspect-[16/10] overflow-hidden">
                                         <img
-                                            src={post.coverImage || "/images/generated/lash_mapping_1769449336290.png"}
+                                            src={post.cover_image || "/images/generated/lash_mapping_1769449336290.png"}
                                             alt={post.title}
                                             className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700"
                                         />
@@ -94,8 +101,7 @@ export default async function BlogPage() {
 
                     {posts.length === 0 && (
                         <div className="text-center py-20 text-white/40">
-                            <p>Nenhum artigo ainda. Execute o script de seed para popular.</p>
-                            <code className="block mt-4 text-sm text-primary/60">npx ts-node src/scripts/seed-blog-complete.ts</code>
+                            <p>Nenhum artigo ainda. Use o painel administrativo para criar seu primeiro post.</p>
                         </div>
                     )}
                 </div>

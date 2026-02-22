@@ -1,6 +1,4 @@
-import { db } from "@/lib/db";
-import { blogPosts } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { supabase } from "@/lib/supabase-client";
 import { BlogEditor } from "@/components/admin/blog/blog-editor";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -12,16 +10,28 @@ interface EditBlogPostPageProps {
     }>;
 }
 
+const TENANT_ID = process.env.TENANT_ID || 'kevelyn_studio';
+
 export default async function EditBlogPostPage({ params }: EditBlogPostPageProps) {
     const { id } = await params;
 
-    const post = await db.query.blogPosts.findFirst({
-        where: eq(blogPosts.id, id)
-    });
+    const { data: post, error } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .eq('id', id)
+        .eq('tenant_id', TENANT_ID)
+        .single();
 
-    if (!post) {
+    if (error || !post) {
         notFound();
     }
+
+    // Map Supabase fields to the format expected by BlogEditor
+    const mappedPost = {
+        ...post,
+        coverImage: post.cover_image,
+        content: typeof post.content === 'string' ? JSON.parse(post.content) : post.content
+    };
 
     return (
         <div className="max-w-4xl mx-auto pb-20">
@@ -29,7 +39,7 @@ export default async function EditBlogPostPage({ params }: EditBlogPostPageProps
                 <ArrowLeft className="w-4 h-4 mr-2" /> Voltar para Lista
             </Link>
             <h1 className="text-3xl font-serif text-white mb-8">Editar Artigo</h1>
-            <BlogEditor initialData={post} />
+            <BlogEditor initialData={mappedPost as any} />
         </div>
     );
 }
