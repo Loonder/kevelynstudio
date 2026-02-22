@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useCallback } from "react";
-import { Calendar, dateFnsLocalizer, Views, View } from "react-big-calendar";
+import { Calendar, dateFnsLocalizer, Views } from "react-big-calendar";
 // @ts-ignore
 import withDragAndDrop from "react-big-calendar/lib/addons/dragAndDrop";
 import { format, parse, startOfWeek, getDay } from "date-fns";
@@ -67,7 +67,7 @@ const MOCK_EVENTS: Event[] = [
 
 export default function CalendarView() {
     const [events, setEvents] = useState<Event[]>(MOCK_EVENTS);
-    const [view, setView] = useState<View>(Views.DAY);
+    const [view, setView] = useState<any>(Views.DAY);
     const [date, setDate] = useState(new Date());
 
     const onEventResize = useCallback(

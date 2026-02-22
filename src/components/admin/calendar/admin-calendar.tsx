@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Calendar, dateFnsLocalizer, Views, View, Navigate } from "react-big-calendar";
+import { Calendar, dateFnsLocalizer, Views, Navigate } from "react-big-calendar";
 import withDragAndDrop from "react-big-calendar/lib/addons/dragAndDrop";
 import { format, parse, startOfWeek, getDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -180,7 +180,7 @@ export function AdminCalendar({ initialEvents, resources, clients, services, def
         return Views.WEEK;
     };
 
-    const [view, setView] = useState<View>(getInitialView);
+    const [view, setView] = useState<any>(getInitialView);
     const [date, setDate] = useState(defaultDate);
     const [selectedProfessionalId, setSelectedProfessionalId] = useState<string>('all');
     const router = useRouter(); // M6: For soft refresh instead of reload
