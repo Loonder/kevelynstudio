@@ -1,59 +1,86 @@
 "use server";
 
-import { db } from "@/lib/db";
-import { services } from "@/db/schema";
-import { eq, asc, desc } from "drizzle-orm";
+import { supabase } from "@/lib/supabase-client";
 import { revalidatePath } from "next/cache";
+
+const TENANT_ID = process.env.TENANT_ID || 'kevelyn_studio';
 
 export async function getServices() {
     try {
-        const result = await db.query.services.findMany({
-            orderBy: [asc(services.displayOrder), desc(services.createdAt)]
-        });
-        return { success: true, data: result };
+        const { data, error } = await supabase
+            .from('services')
+            .select('*')
+            .eq('tenant_id', TENANT_ID)
+            .order('display_order', { ascending: true })
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        return { success: true, data: data };
     } catch (error) {
         console.error(error);
         return { success: false, error: "Erro ao buscar serviços" };
     }
 }
 
-export async function updateService(id: string, data: Partial<typeof services.$inferInsert>) {
+export async function updateService(id: string, data: any) {
     try {
-        await db.update(services).set(data).where(eq(services.id, id));
+        const { error } = await supabase
+            .from('services')
+            .update({
+                title: data.title,
+                description: data.description,
+                price: data.price,
+                duration_minutes: data.durationMinutes || data.duration_minutes,
+                category: data.category,
+                image_url: data.image_url,
+                display_order: data.displayOrder || data.display_order,
+                is_featured: data.isFeatured !== undefined ? data.isFeatured : data.is_featured,
+                promotional_price: data.promotionalPrice || data.promotional_price
+            })
+            .eq('id', id)
+            .eq('tenant_id', TENANT_ID);
+
+        if (error) throw error;
         revalidatePath("/admin/settings/services");
         return { success: true };
     } catch (error) {
+        console.error("Update Service Error:", error);
         return { success: false, error: "Erro ao atualizar serviço" };
     }
 }
 
 export async function toggleFeatured(id: string, currentState: boolean) {
     try {
-        await db.update(services).set({ isFeatured: !currentState }).where(eq(services.id, id));
+        const { error } = await supabase
+            .from('services')
+            .update({ is_featured: !currentState })
+            .eq('id', id)
+            .eq('tenant_id', TENANT_ID);
+
+        if (error) throw error;
         revalidatePath("/admin/settings/services");
         return { success: true };
     } catch (error) {
+        console.error("Toggle Featured Error:", error);
         return { success: false, error: "Erro ao destacar serviço" };
     }
 }
 
 export async function reorderServices(items: { id: string; order: number }[]) {
     try {
-        // In a real production app with many items, a transaction or a single raw query CASE WHEN is better.
-        // For menu size (<50 items), this loop is acceptable.
-        await db.transaction(async (tx) => {
-            for (const item of items) {
-                await tx.update(services)
-                    .set({ displayOrder: item.order })
-                    .where(eq(services.id, item.id));
-            }
-        });
+        for (const item of items) {
+            await supabase
+                .from('services')
+                .update({ display_order: item.order })
+                .eq('id', item.id)
+                .eq('tenant_id', TENANT_ID);
+        }
 
         revalidatePath("/admin/settings/services");
         return { success: true };
     } catch (error) {
         console.error("Reorder Error:", error);
-        return { success: false, error: "Falha ao reordenar serviçõs" };
+        return { success: false, error: "Falha ao reordenar serviços" };
     }
 }
 

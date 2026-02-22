@@ -1,6 +1,4 @@
-import { db } from "@/lib/db";
-import { appointments, professionals, services } from "@/db/schema";
-import { eq, and, gte, lte } from "drizzle-orm";
+import { supabase } from "@/lib/supabase-client";
 import { DateUtils } from "@/lib/date-utils";
 
 type TimeSlot = {
@@ -8,6 +6,8 @@ type TimeSlot = {
     available: boolean;
     reason?: "booked" | "buffer" | "closed";
 };
+
+const TENANT_ID = process.env.TENANT_ID || 'kevelyn_studio';
 
 export class AvailabilityService {
     // Hardcoded working hours for now (could be DB driven later)
@@ -26,16 +26,18 @@ export class AvailabilityService {
         const endOfDay = DateUtils.setTime(date, this.WORKING_HOURS.end, 0);
 
         // 1. Fetch existing appointments for this pro on this day
-        const existingAppointments = await db
-            .select()
-            .from(appointments)
-            .where(
-                and(
-                    eq(appointments.professionalId, professionalId),
-                    gte(appointments.startTime, startOfDay),
-                    lte(appointments.startTime, endOfDay)
-                )
-            );
+        const { data: existingAppointments, error } = await supabase
+            .from('appointments')
+            .select('*')
+            .eq('professional_id', professionalId)
+            .eq('tenant_id', TENANT_ID)
+            .gte('start_time', startOfDay.toISOString())
+            .lte('start_time', endOfDay.toISOString());
+
+        if (error) {
+            console.error("Fetch Appointments Error:", error);
+            return [];
+        }
 
         // 2. Generate all possible slots (e.g., every 30 mins)
         const slots: TimeSlot[] = [];
@@ -51,20 +53,16 @@ export class AvailabilityService {
             let reason: TimeSlot["reason"] = undefined;
 
             // 3. Check overlaps with internal appointments
-            for (const appt of existingAppointments) {
+            for (const appt of (existingAppointments || [])) {
                 // Add a buffer? Let's say 10 mins buffer after every appt
-                const apptEndWithBuffer = DateUtils.addMinutes(new Date(appt.endTime), 10);
+                const apptEndWithBuffer = DateUtils.addMinutes(new Date(appt.end_time), 10);
 
-                if (DateUtils.isOverlapping(currentTime, slotEnd, new Date(appt.startTime), apptEndWithBuffer)) {
+                if (DateUtils.isOverlapping(currentTime, slotEnd, new Date(appt.start_time), apptEndWithBuffer)) {
                     isAvailable = false;
                     reason = "booked";
                     break;
                 }
             }
-
-            // 4. Check Google Calendar (Stub)
-            // TODO: Integrate real GCal check here
-            // if (GCalService.checkOverlap(currentTime, slotEnd)) { isAvailable = false ... }
 
             slots.push({
                 time: DateUtils.formatTime(currentTime),

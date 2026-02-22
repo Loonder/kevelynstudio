@@ -1,9 +1,9 @@
 "use server";
 
-import { db } from "@/lib/db";
-import { clients } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { supabase } from "@/lib/supabase-client";
 import { revalidatePath } from "next/cache";
+
+const TENANT_ID = process.env.TENANT_ID || 'kevelyn_studio';
 
 type SensoryPreferences = {
     favoriteMusic?: string;
@@ -14,11 +14,15 @@ type SensoryPreferences = {
 
 export async function updateClientPreferences(clientId: string, preferences: SensoryPreferences) {
     try {
-        await db.update(clients)
-            .set({
-                sensoryPreferences: preferences
+        const { error } = await supabase
+            .from('contacts')
+            .update({
+                sensory_preferences: preferences
             })
-            .where(eq(clients.id, clientId));
+            .eq('id', clientId)
+            .eq('tenant_id', TENANT_ID);
+
+        if (error) throw error;
 
         revalidatePath("/profile");
         revalidatePath("/admin");

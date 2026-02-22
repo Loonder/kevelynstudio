@@ -1,40 +1,60 @@
 
-import { db } from "@/lib/db";
-import { clients, appointments, services } from "@/db/schema";
-import { desc, eq, sql } from "drizzle-orm";
+import { supabase } from "@/lib/supabase-client";
+
+const TENANT_ID = process.env.TENANT_ID || 'kevelyn_studio';
 
 export async function getAdminStats() {
-    // 1. Clients/Leads
-    const allClients = await db.select().from(clients).orderBy(desc(clients.createdAt));
-    const activeClientsCount = allClients.length;
+    // 1. Contacts (Leads)
+    const { data: allContacts, error: contactsError } = await supabase
+        .from('contacts')
+        .select('*')
+        .eq('tenant_id', TENANT_ID)
+        .order('created_at', { ascending: false });
 
-    // 2. Revenue (Mock logic based on confirmed appointments or just random seeded data if none)
-    // In a real scenario, sum up 'totalAmount' from 'appointments' where status='completed'
-    // For now, let's just count appointments * average ticket or use a mock if table is empty
-    const allAppointments = await db.select().from(appointments);
-    const completedApps = allAppointments.filter(a => a.status === 'completed');
+    if (contactsError) {
+        console.error("Fetch Contacts Error:", contactsError);
+        return {
+            activeClients: 0,
+            recentLeads: [],
+            revenue: "R$ 0,00",
+            conversionRate: "0%"
+        };
+    }
+    const activeClientsCount = (allContacts || []).length;
 
-    // Calculate simulated revenue if no real data (since we just seeded services, maybe no appointments yet)
+    // 2. Revenue
+    const { data: allAppointments, error: appsError } = await supabase
+        .from('appointments')
+        .select('*')
+        .eq('tenant_id', TENANT_ID);
+
+    if (appsError) {
+        console.error("Fetch Appointments Error:", appsError);
+    }
+
+    const apps = allAppointments || [];
+    const completedApps = apps.filter(a => a.status === 'completed');
+
     let revenue = 0;
     if (completedApps.length > 0) {
-        revenue = completedApps.reduce((acc, curr) => acc + (curr.totalAmount || 0), 0) / 100;
+        revenue = completedApps.reduce((acc, curr) => acc + (curr.total_amount || 0), 0) / 100;
     } else {
-        // Fallback for "Demo Mode" visualization
+        // Fallback for demo mode
         revenue = 42900;
     }
 
-    // 3. Conversion Rate (Calculated: Leads -> Appointments)
-    const conversionRate = allClients.length > 0
-        ? `${((allAppointments.length / allClients.length) * 100).toFixed(1)}%`
+    // 3. Conversion Rate
+    const conversionRate = (allContacts || []).length > 0
+        ? `${((apps.length / (allContacts || []).length) * 100).toFixed(1)}%`
         : "0%";
 
     return {
         activeClients: activeClientsCount,
-        recentLeads: allClients.slice(0, 5).map(c => ({
-            name: c.fullName,
+        recentLeads: (allContacts || []).slice(0, 5).map(c => ({
+            name: c.name,
             phone: c.phone,
-            status: "Novo", // Default status
-            created_at: c.createdAt ? c.createdAt.toISOString() : new Date().toISOString()
+            status: "Novo",
+            created_at: c.created_at || new Date().toISOString()
         })),
         revenue: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(revenue),
         conversionRate

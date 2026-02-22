@@ -1,24 +1,23 @@
 
-import { db } from "../../../../lib/db";
-import { blogPosts } from "../../../../db/schema";
-import { eq } from "drizzle-orm";
+import { supabase } from "../../../../lib/supabase-client";
 import { notFound } from "next/navigation";
 import PublicLayout from "../../../../components/layout/PublicLayout";
 import Link from "next/link";
 import { Button } from "../../../../components/ui/button";
 
+const TENANT_ID = process.env.TENANT_ID || 'kevelyn_studio';
+
 export default async function ArticlePage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params;
 
-    let post: any = null;
-    try {
-        const result = await db.select().from(blogPosts).where(eq(blogPosts.slug, slug)).limit(1);
-        post = result[0] || null;
-    } catch (e) {
-        console.error("Error fetching post", e);
-    }
+    const { data: post, error } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .eq('slug', slug)
+        .eq('tenant_id', TENANT_ID)
+        .single();
 
-    if (!post) {
+    if (error || !post) {
         notFound();
     }
 
@@ -28,7 +27,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
 
     const bodyText = content?.body || "";
     const paragraphs = bodyText.split('\n\n').filter((p: string) => p.trim());
-    const tags = typeof post.tags === 'string' ? JSON.parse(post.tags) : post.tags || [];
+    const tags = post.tags || [];
 
     return (
         <PublicLayout>
@@ -36,7 +35,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                 {/* Hero */}
                 <div className="relative h-[60vh] w-full">
                     <img
-                        src={post.coverImage || "/images/generated/hero_lashes_1769449267789.png"}
+                        src={post.cover_image || "/images/generated/hero_lashes_1769449267789.png"}
                         className="w-full h-full object-cover opacity-60"
                         alt={post.title}
                     />

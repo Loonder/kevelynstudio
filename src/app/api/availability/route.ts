@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { AvailabilityService } from "@/services/availability-service";
-import { db } from "@/lib/db";
-import { services } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { supabase } from "@/lib/supabase-client";
+
+const TENANT_ID = process.env.TENANT_ID || 'kevelyn_studio';
 
 export async function POST(req: Request) {
     try {
@@ -14,18 +14,21 @@ export async function POST(req: Request) {
         }
 
         // Fetch service duration
-        const service = await db.query.services.findFirst({
-            where: eq(services.id, serviceId)
-        });
+        const { data: service, error } = await supabase
+            .from('services')
+            .select('*')
+            .eq('id', serviceId)
+            .eq('tenant_id', TENANT_ID)
+            .single();
 
-        if (!service) {
+        if (error || !service) {
             return NextResponse.json({ error: "Service not found" }, { status: 404 });
         }
 
         const slots = await AvailabilityService.getSlots(
             date,
             professionalId,
-            service.durationMinutes
+            service.duration_minutes
         );
 
         return NextResponse.json({ slots });

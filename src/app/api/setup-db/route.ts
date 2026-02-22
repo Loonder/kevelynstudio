@@ -1,43 +1,34 @@
-// @ts-nocheck
-import { db } from "@/lib/db";
-import { sql } from "drizzle-orm";
+
+import { supabase } from "@/lib/supabase-client";
 import { NextResponse } from "next/server";
+
+const TENANT_ID = process.env.TENANT_ID || 'kevelyn_studio';
 
 export async function GET() {
     try {
-        console.log("Creating table...");
+        console.log("Checking methodology steps in Supabase...");
 
-        await db.execute(sql`
-            CREATE TABLE IF NOT EXISTS "methodology_steps" (
-                "id" SERIAL PRIMARY KEY,
-                "title" text NOT NULL,
-                "description" text NOT NULL,
-                "order" integer DEFAULT 0 NOT NULL,
-                "active" boolean DEFAULT true,
-                "created_at" timestamp DEFAULT now(),
-                "updated_at" timestamp DEFAULT now()
-            );
-        `);
+        const { count, error } = await supabase
+            .from('methodology_steps')
+            .select('*', { count: 'exact', head: true })
+            .eq('tenant_id', TENANT_ID);
 
-        // Check count
-        const result = await db.execute(sql`SELECT count(*) as count FROM "methodology_steps"`);
-        const count = Number(result[0].count);
+        if (error) throw error;
 
         if (count === 0) {
-            await db.execute(sql`
-                INSERT INTO "methodology_steps" ("title", "description", "order", "active") VALUES
-                ('Visagismo Analítico', 'Análise da estrutura óssea e simetria facial para um design exclusivo.', 1, true),
-                ('Health First', 'Produtos de alta performance que nutrem enquanto embelezam, priorizando a saúde dos fios.', 2, true),
-                ('Mapping Personalizado', 'Mapeamento milimétrico de curvaturas e espessuras para harmonização perfeita.', 3, true),
-                ('Experiência Sensorial', 'Aromaprocedimento e conforto absoluto para um momento de desconexão total.', 4, true);
-            `);
-            return NextResponse.json({ message: "Table created and seeded", count: 4 });
+            await supabase.from('methodology_steps').insert([
+                { title: 'Visagismo Analítico', description: 'Análise da estrutura óssea e simetria facial para um design exclusivo.', display_order: 1, active: true, tenant_id: TENANT_ID },
+                { title: 'Health First', description: 'Produtos de alta performance que nutrem enquanto embelezam, priorizando a saúde dos fios.', display_order: 2, active: true, tenant_id: TENANT_ID },
+                { title: 'Mapping Personalizado', description: 'Mapeamento milimétrico de curvaturas e espessuras para harmonização perfeita.', display_order: 3, active: true, tenant_id: TENANT_ID },
+                { title: 'Experiência Sensorial', description: 'Aromaprocedimento e conforto absoluto para um momento de desconexão total.', display_order: 4, active: true, tenant_id: TENANT_ID },
+            ]);
+            return NextResponse.json({ message: "Table seeded in Supabase", count: 4 });
         }
 
-        return NextResponse.json({ message: "Table checked/created", count });
+        return NextResponse.json({ message: "Supabase table has data", count });
     } catch (error: any) {
-        console.error("Migration error:", error);
-        return NextResponse.json({ error: error.message, stack: error.stack }, { status: 500 });
+        console.error("Supabase Setup error:", error);
+        return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
 

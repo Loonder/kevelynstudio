@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { db } from "@/lib/db";
-import { clients } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { supabase } from "@/lib/supabase-client";
+
+const TENANT_ID = process.env.TENANT_ID || 'kevelyn_studio';
 
 export async function GET(
     request: NextRequest,
@@ -10,26 +10,29 @@ export async function GET(
 ) {
     try {
         const { userId } = await params;
-        const supabase = await createClient();
-        const { data: { user } } = await supabase.auth.getUser();
+        const supabaseServer = await createClient();
+        const { data: { user } } = await supabaseServer.auth.getUser();
 
         if (!user || user.id !== userId) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const client = await db.query.clients.findFirst({
-            where: eq(clients.authUserId, userId),
-        });
+        const { data: contact, error } = await supabase
+            .from('contacts')
+            .select('*')
+            .eq('auth_user_id', userId)
+            .eq('tenant_id', TENANT_ID)
+            .maybeSingle();
 
-        if (!client) {
+        if (error || !contact) {
             return NextResponse.json({ error: "Client not found" }, { status: 404 });
         }
 
         return NextResponse.json({
-            id: client.id,
-            fullName: client.fullName,
-            email: client.email,
-            phone: client.phone,
+            id: contact.id,
+            fullName: contact.name,
+            email: contact.email,
+            phone: contact.phone,
         });
     } catch (error) {
         console.error("Error fetching client:", error);

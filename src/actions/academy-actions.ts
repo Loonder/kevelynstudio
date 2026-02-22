@@ -1,14 +1,20 @@
-
 "use server";
 
-import { db } from "@/lib/db";
-import { courses } from "@/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { supabase } from "@/lib/supabase-client";
 import { revalidatePath } from "next/cache";
+
+const TENANT_ID = process.env.TENANT_ID || 'kevelyn_studio';
 
 export async function getCourses() {
     try {
-        return await db.select().from(courses).orderBy(desc(courses.createdAt));
+        const { data, error } = await supabase
+            .from('courses')
+            .select('*')
+            .eq('tenant_id', TENANT_ID)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        return data || [];
     } catch (error) {
         console.error("Get Courses Error:", error);
         return [];
@@ -17,7 +23,18 @@ export async function getCourses() {
 
 export async function updateCourse(data: any) {
     try {
-        console.log("Updating course data:", data);
+        const { error } = await supabase
+            .from('courses')
+            .update({
+                title: data.title,
+                price: data.price,
+                description: data.description,
+                active: data.active
+            })
+            .eq('id', data.id)
+            .eq('tenant_id', TENANT_ID);
+
+        if (error) throw error;
         revalidatePath("/admin/academy");
         return { success: true };
     } catch (error) {
@@ -28,25 +45,30 @@ export async function updateCourse(data: any) {
 
 export async function createCourse(data: { title: string; price: number; description?: string }) {
     try {
-        const newId = crypto.randomUUID();
-        await db.insert(courses).values({
-            id: newId,
-            title: data.title,
-            price: data.price, // cents
-            description: data.description,
-            active: true
-        });
+        const { data: newCourse, error } = await supabase
+            .from('courses')
+            .insert({
+                title: data.title,
+                price: data.price,
+                description: data.description,
+                active: true,
+                tenant_id: TENANT_ID
+            })
+            .select()
+            .single();
+
+        if (error) throw error;
         revalidatePath("/admin/academy");
-        return { success: true, id: newId };
+        return { success: true, id: newCourse.id };
     } catch (error) {
+        console.error("Create Course Error:", error);
         return { success: false, error: "Erro ao criar curso." };
     }
 }
 
 export async function saveLessons(courseId: string, lessonsData: any) {
     try {
-        console.log("Saving lessons for course", courseId, "Data:", lessonsData);
-        // Implementação real da persistência de lições viria aqui.
+        // Implementation for Supabase lessons would go here
         revalidatePath(`/admin/academy/${courseId}`);
         return { success: true };
     } catch (error) {
@@ -57,7 +79,6 @@ export async function saveLessons(courseId: string, lessonsData: any) {
 
 export async function editLesson(courseId: string, lessonId: string, lessonData: any) {
     try {
-        console.log("Editing lesson", lessonId, "for course", courseId);
         revalidatePath(`/admin/academy/${courseId}`);
         return { success: true };
     } catch (error) {
@@ -67,7 +88,6 @@ export async function editLesson(courseId: string, lessonId: string, lessonData:
 
 export async function deleteLesson(courseId: string, lessonId: string) {
     try {
-        console.log("Deleting lesson", lessonId, "from course", courseId);
         revalidatePath(`/admin/academy/${courseId}`);
         return { success: true };
     } catch (error) {

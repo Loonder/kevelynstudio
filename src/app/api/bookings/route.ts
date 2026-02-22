@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
-import { appointments, clients } from "@/db/schema";
-import { eq, or } from "drizzle-orm";
+import { supabase } from "@/lib/supabase-client";
 import { createClient } from "@/lib/supabase/server";
+
+const TENANT_ID = process.env.TENANT_ID || 'kevelyn_studio';
 
 export async function POST(req: Request) {
     try {
@@ -10,80 +10,93 @@ export async function POST(req: Request) {
         const { clientData, appointmentData, sensoryData } = body;
 
         // Auth Check
-        const supabase = await createClient();
-        const { data: { user } } = await supabase.auth.getUser();
+        const supabaseServer = await createClient();
+        const { data: { user } } = await supabaseServer.auth.getUser();
 
-        // 1. Find or Create Client
-        let clientId: string;
-
-        // Determine matching strategy
-        // If logged in, look for client with authUserId OR email
-        // If guest, look for client with email
-
-        let existingClient = null;
+        // 1. Find or Create Contact
+        let contactId: string;
+        let existingContact = null;
 
         if (user) {
-            existingClient = await db.query.clients.findFirst({
-                where: or(
-                    eq(clients.authUserId, user.id),
-                    eq(clients.email, clientData.email) // Link legacy client by email if logging in for first time
-                )
-            });
+            // Try to find by Auth ID or Email
+            const { data } = await supabase
+                .from('contacts')
+                .select('*')
+                .eq('tenant_id', TENANT_ID)
+                .or(`auth_user_id.eq.${user.id},email.eq.${clientData.email}`)
+                .maybeSingle();
+            existingContact = data;
         } else {
-            existingClient = await db.query.clients.findFirst({
-                where: eq(clients.email, clientData.email)
-            });
+            // Try to find by Email or Phone
+            const { data } = await supabase
+                .from('contacts')
+                .select('*')
+                .eq('tenant_id', TENANT_ID)
+                .or(`email.eq.${clientData.email},phone.eq.${clientData.phone}`)
+                .maybeSingle();
+            existingContact = data;
         }
 
-        if (existingClient) {
-            clientId = existingClient.id;
-
-            // Update prefs & Link Auth ID if missing
+        if (existingContact) {
+            contactId = existingContact.id;
             const updateData: any = {
-                fullName: clientData.name,
+                name: clientData.name,
                 phone: clientData.phone,
-                sensoryPreferences: {
+                sensory_preferences: {
                     favoriteMusic: sensoryData.musicGenre,
                     drinkPreference: sensoryData.drink
                 }
             };
 
-            // If user is logged in and client wasn't linked, link it now
-            if (user && !existingClient.authUserId) {
-                updateData.authUserId = user.id;
+            if (user && !existingContact.auth_user_id) {
+                updateData.auth_user_id = user.id;
             }
 
-            await db.update(clients)
-                .set(updateData)
-                .where(eq(clients.id, clientId));
+            await supabase
+                .from('contacts')
+                .update(updateData)
+                .eq('id', contactId);
         } else {
-            const [newClient] = await db.insert(clients).values({
-                fullName: clientData.name,
-                email: clientData.email,
-                phone: clientData.phone,
-                authUserId: user ? user.id : null,
-                sensoryPreferences: {
-                    favoriteMusic: sensoryData.musicGenre,
-                    drinkPreference: sensoryData.drink
-                }
-            }).returning();
-            clientId = newClient.id;
+            const { data: newContact, error: insertError } = await supabase
+                .from('contacts')
+                .insert({
+                    name: clientData.name,
+                    email: clientData.email,
+                    phone: clientData.phone,
+                    auth_user_id: user ? user.id : null,
+                    tenant_id: TENANT_ID,
+                    sensory_preferences: {
+                        favoriteMusic: sensoryData.musicGenre,
+                        drinkPreference: sensoryData.drink
+                    }
+                })
+                .select()
+                .single();
+
+            if (insertError) throw insertError;
+            contactId = newContact.id;
         }
 
         // 2. Create Appointment
-        // Calculate End Time (simplified, assuming passed data is correct)
         const startTime = new Date(appointmentData.date);
-        // Mock duration for now: 60 mins
+        // Default 60 mins if not specified
         const endTime = new Date(startTime.getTime() + 60 * 60000);
 
-        const [newAppointment] = await db.insert(appointments).values({
-            clientId: clientId,
-            professionalId: appointmentData.professionalId,
-            serviceId: appointmentData.serviceId,
-            startTime: startTime,
-            endTime: endTime,
-            status: 'pending'
-        }).returning();
+        const { data: newAppointment, error: apptError } = await supabase
+            .from('appointments')
+            .insert({
+                contact_id: contactId,
+                professional_id: appointmentData.professionalId,
+                service_id: appointmentData.serviceId,
+                start_time: startTime.toISOString(),
+                end_time: endTime.toISOString(),
+                status: 'pending',
+                tenant_id: TENANT_ID
+            })
+            .select()
+            .single();
+
+        if (apptError) throw apptError;
 
         return NextResponse.json({ success: true, appointment: newAppointment });
 

@@ -1,26 +1,25 @@
 "use server";
 
-import { db } from "@/lib/db";
-import { methodologySteps } from "@/db/schema";
-import { eq, asc } from "drizzle-orm";
+import { supabase } from "@/lib/supabase-client";
 import { revalidatePath } from "next/cache";
+
+const TENANT_ID = process.env.TENANT_ID || 'kevelyn_studio';
 
 export async function getMethodologySteps() {
     try {
-        // Timeout protection: If DB takes > 2s, throw error to trigger fallback
-        const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("Database Timeout")), 2000)
-        );
+        const { data, error } = await supabase
+            .from('methodology_steps')
+            .select('*')
+            .eq('tenant_id', TENANT_ID)
+            .order('display_order', { ascending: true });
 
-        const steps = await Promise.race([
-            db.query.methodologySteps.findMany({
-                orderBy: [asc(methodologySteps.order)],
-            }),
-            timeoutPromise
-        ]);
-
-        return steps as any; // Cast to avoid type issues with race result
+        if (error) throw error;
+        return (data || []).map(step => ({
+            ...step,
+            order: step.display_order // Mapping back for UI consistency if needed
+        })) as any;
     } catch (error) {
+        console.error("Fetch Methodology Steps Error:", error);
         // Fallback data to prevent homepage crash (Silent fail for user)
         const now = new Date();
         return [
@@ -33,31 +32,61 @@ export async function getMethodologySteps() {
 }
 
 export async function createMethodologyStep(data: { title: string; description: string; order: number }) {
-    await db.insert(methodologySteps).values({
-        title: data.title,
-        description: data.description,
-        order: data.order,
-        active: true,
-    });
-    revalidatePath("/admin/methodology");
-    revalidatePath("/");
+    try {
+        const { error } = await supabase
+            .from('methodology_steps')
+            .insert({
+                title: data.title,
+                description: data.description,
+                display_order: data.order,
+                active: true,
+                tenant_id: TENANT_ID
+            });
+
+        if (error) throw error;
+        revalidatePath("/admin/methodology");
+        revalidatePath("/");
+    } catch (error) {
+        console.error("Create Methodology Step Error:", error);
+    }
 }
 
 export async function updateMethodologyStep(id: number, data: { title?: string; description?: string; order?: number; active?: boolean }) {
-    await db.update(methodologySteps)
-        .set({ ...data, updatedAt: new Date() })
-        .where(eq(methodologySteps.id, id));
+    try {
+        const { error } = await supabase
+            .from('methodology_steps')
+            .update({
+                title: data.title,
+                description: data.description,
+                display_order: data.order,
+                active: data.active,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', id)
+            .eq('tenant_id', TENANT_ID);
 
-    revalidatePath("/admin/methodology");
-    revalidatePath("/");
+        if (error) throw error;
+        revalidatePath("/admin/methodology");
+        revalidatePath("/");
+    } catch (error) {
+        console.error("Update Methodology Step Error:", error);
+    }
 }
 
 export async function deleteMethodologyStep(id: number) {
-    await db.delete(methodologySteps)
-        .where(eq(methodologySteps.id, id));
+    try {
+        const { error } = await supabase
+            .from('methodology_steps')
+            .delete()
+            .eq('id', id)
+            .eq('tenant_id', TENANT_ID);
 
-    revalidatePath("/admin/methodology");
-    revalidatePath("/");
+        if (error) throw error;
+        revalidatePath("/admin/methodology");
+        revalidatePath("/");
+    } catch (error) {
+        console.error("Delete Methodology Step Error:", error);
+    }
 }
 
 

@@ -1,9 +1,9 @@
 "use server";
 
-import { db } from "@/lib/db";
-import { appointments, clients, services, professionals } from "@/db/schema";
-import { eq, and, gte, lte, asc } from "drizzle-orm";
+import { supabase } from "@/lib/supabase-client";
 import { revalidatePath } from "next/cache";
+
+const TENANT_ID = process.env.TENANT_ID || 'kevelyn_studio';
 
 export async function getTodayAppointments() {
     const today = new Date();
@@ -12,34 +12,44 @@ export async function getTodayAppointments() {
     tonight.setHours(23, 59, 59, 999);
 
     try {
-        const results = await db
-            .select({
-                id: appointments.id,
-                startTime: appointments.startTime,
-                status: appointments.status,
-                client: {
-                    id: clients.id,
-                    fullName: clients.fullName,
-                    sensoryPreferences: clients.sensoryPreferences,
-                },
-                service: {
-                    title: services.title,
-                },
-                professional: {
-                    name: professionals.name,
-                }
-            })
-            .from(appointments)
-            .innerJoin(clients, eq(appointments.clientId, clients.id))
-            .innerJoin(services, eq(appointments.serviceId, services.id))
-            .innerJoin(professionals, eq(appointments.professionalId, professionals.id))
-            .where(
-                and(
-                    gte(appointments.startTime, today),
-                    lte(appointments.startTime, tonight)
+        const { data, error } = await supabase
+            .from('appointments')
+            .select(`
+                id,
+                start_time,
+                status,
+                contact:contacts (
+                    id,
+                    name,
+                    sensory_preferences
+                ),
+                service:services (
+                    title
+                ),
+                professional:professionals (
+                    name
                 )
-            )
-            .orderBy(asc(appointments.startTime));
+            `)
+            .eq('tenant_id', TENANT_ID)
+            .gte('start_time', today.toISOString())
+            .lte('start_time', tonight.toISOString())
+            .order('start_time', { ascending: true });
+
+        if (error) throw error;
+
+        // Transform to match the old shape if needed
+        const results = (data || []).map((appt: any) => ({
+            id: appt.id,
+            startTime: appt.start_time,
+            status: appt.status,
+            client: appt.contact ? {
+                id: appt.contact.id,
+                fullName: appt.contact.name,
+                sensoryPreferences: appt.contact.sensory_preferences,
+            } : null,
+            service: appt.service,
+            professional: appt.professional
+        }));
 
         return { data: results };
     } catch (error) {
@@ -50,13 +60,18 @@ export async function getTodayAppointments() {
 
 export async function updateAppointmentStatus(id: string, status: "confirmed" | "completed" | "cancelled") {
     try {
-        await db.update(appointments)
-            .set({ status })
-            .where(eq(appointments.id, id));
+        const { error } = await supabase
+            .from('appointments')
+            .update({ status })
+            .eq('id', id)
+            .eq('tenant_id', TENANT_ID);
+
+        if (error) throw error;
 
         revalidatePath("/(reception)/dashboard");
         return { success: true };
     } catch (error) {
+        console.error("Update Status Error:", error);
         return { error: "Failed to update status." };
     }
 }
