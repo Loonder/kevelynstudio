@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Rectangle } from "recharts";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -42,7 +42,7 @@ export function RevenueChart({ data }: { data: any[] }) {
                         axisLine={false}
                         tickLine={false}
                         tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 10 }}
-                        tickFormatter={(value) => `R$${value / 1000}k`}
+                        tickFormatter={(value: number) => `R$${value / 1000}k`}
                     />
                     <Tooltip content={<CustomTooltip />} />
                     <Area
