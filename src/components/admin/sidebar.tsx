@@ -74,8 +74,8 @@ export function AdminSidebar({ className, onClose }: AdminSidebarProps) {
             <div className="p-4 border-t border-white/10">
                 <button
                     onClick={async () => {
-                        const { signOutAction } = await import("@/actions/auth-actions");
-                        await signOutAction();
+                        const { signOut } = await import("@/actions/auth-actions");
+                        await signOut();
                     }}
                     className="flex items-center gap-3 px-4 py-3 w-full text-white/60 hover:text-white hover:bg-white/5 rounded-md transition-colors group"
                 >
