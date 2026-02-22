@@ -1,6 +1,6 @@
 import { ArrowRight } from "lucide-react";
-import { motion, useMotionValue, useSpring } from "framer-motion";
-import { useRef, useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 

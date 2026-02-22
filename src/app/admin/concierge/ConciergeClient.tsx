@@ -25,7 +25,7 @@ export default function ConciergeClient({ initialServices }: ConciergeClientProp
     const [saving, setSaving] = useState(false);
     const [activeTab, setActiveTab] = useState<'services' | 'faq'>('services');
 
-    const handleFieldChange = (index: number, field: keyof ConciergeService, value: any) => {
+    const handleFieldChange = (index: number, field: keyof ConciergeService, value: string | number) => {
         const newServices = [...services];
         newServices[index] = { ...newServices[index], [field]: value };
         setServices(newServices);
@@ -53,7 +53,7 @@ export default function ConciergeClient({ initialServices }: ConciergeClientProp
             });
             // Wait, I can't easily save without Category. 
             // It might be better to make this page read-only or redirect to the Main Services page.
-        } catch (error) {
+        } catch {
             toast.error("Erro ao salvar.");
         }
         setSaving(false);

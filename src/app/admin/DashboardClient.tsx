@@ -53,7 +53,7 @@ export default function DashboardClient({ initialStats }: DashboardProps) {
 
     const stats = [
         { label: "Clientes Ativos", value: initialStats.activeClients.toLocaleString(), icon: Users, color: "text-blue-400" },
-        { label: "Mensagens (Bot)", value: status?.messagesProcessed?.toLocaleString() || "0", icon: MessageSquare, color: "text-primary" },
+        { label: "Mensagens (Bot)", value: status?.messagesProcessed ? status.messagesProcessed.toLocaleString() : "0", icon: MessageSquare, color: "text-primary" },
         { label: "Taxa de Conversão", value: initialStats.conversionRate, icon: Zap, color: "text-amber-400" },
         { label: "Receita (Mês)", value: initialStats.revenue, icon: CreditCard, color: "text-emerald-400" },
     ];
@@ -161,7 +161,7 @@ export default function DashboardClient({ initialStats }: DashboardProps) {
                                     className="flex items-center gap-4 p-3 border border-white/5 bg-white/5 rounded-lg hover:border-primary/30 transition-all cursor-pointer group"
                                 >
                                     <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-serif text-lg">
-                                        {lead.name?.charAt(0) || 'L'}
+                                        {lead.name ? lead.name.charAt(0).toUpperCase() : 'L'}
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="text-sm text-white font-medium truncate group-hover:text-primary transition-colors">
