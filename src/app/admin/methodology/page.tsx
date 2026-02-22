@@ -1,7 +1,13 @@
 import { getMethodologySteps } from "@/actions/cms-actions";
 import { Plus, Edit2, Trash2 } from "lucide-react";
 
-import { MethodologyStep } from "@/lib/schema/cms";
+interface MethodologyStep {
+    id: number;
+    title: string;
+    description: string;
+    order: number;
+    active: boolean;
+}
 
 export default async function MethodologyManagerPage() {
     const steps: MethodologyStep[] = await getMethodologySteps();
