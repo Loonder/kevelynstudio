@@ -4,7 +4,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { Command } from "cmdk";
 import { Search, Calendar, Users, DollarSign, Plus, LayoutDashboard, Calculator, User, FileText } from "lucide-react";
-import { searchClients } from "@/actions/analytics-actions";
+import { searchClients } from "@/actions/client-actions";
 import { useDebounce } from "@/hooks/use-debounce"; // Assuming this exists or I will create it inline
 import { Dialog, DialogContent } from "@/components/ui/dialog"; // Using basic dialog to host it
 

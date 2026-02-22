@@ -28,6 +28,24 @@ export async function getClients() {
     }
 }
 
+export async function searchClients(query: string) {
+    try {
+        if (!query) return [];
+        const { data, error } = await supabase
+            .from('contacts')
+            .select('id, name, email')
+            .eq('tenant_id', TENANT_ID)
+            .ilike('name', `%${query}%`)
+            .limit(5);
+
+        if (error) throw error;
+        return data || [];
+    } catch (error) {
+        console.error("Failed to search clients from Supabase:", error);
+        return [];
+    }
+}
+
 export async function getClientById(id: string) {
     try {
         const { data: client, error: clientError } = await supabase
