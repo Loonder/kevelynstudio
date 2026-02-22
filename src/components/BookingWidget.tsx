@@ -158,9 +158,9 @@ export default function BookingWidget() {
                                     const date = new Date(slot.start);
                                     return (
                                         <motion.div
+                                            key={i}
                                             {...({
                                                 variants: itemVariants,
-                                                key: i
                                             } as any)}
                                             onClick={() => handleBook(slot)}
                                             className="snap-start min-w-[180px] group cursor-pointer relative overflow-hidden rounded-xl border border-white/10 bg-black/40 hover:bg-white/5 transition-all duration-500 hover:border-white/30 hover:shadow-[0_0_30px_rgba(255,255,255,0.05)]"
