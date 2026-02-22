@@ -2,7 +2,7 @@
 
 import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
-import { getClient, updateClient } from "@/actions/client-actions";
+import { getClientById, updateClient } from "@/actions/client-actions";
 import { LuxuryButton } from "@/components/ui/luxury-button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -41,19 +41,20 @@ export default function EditClientPage({ params }: { params: Promise<{ id: strin
 
     useEffect(() => {
         async function load() {
-            const res = await getClient(id);
-            if (res.success && res.data) {
+            const raw = await getClientById(id);
+            const res = raw as any;
+            if (res) {
                 // Merge sensory preferences with defaults
                 setData({
-                    fullName: res.data.fullName,
-                    email: res.data.email,
-                    phone: res.data.phone,
-                    notes: res.data.notes || "",
+                    fullName: res.fullName || "",
+                    email: res.email || "",
+                    phone: res.phone || "",
+                    notes: res.notes || "",
                     sensoryPreferences: {
-                        favoriteMusic: res.data.sensoryPreferences?.favoriteMusic || "",
-                        drinkPreference: res.data.sensoryPreferences?.drinkPreference || "None",
-                        temperature: res.data.sensoryPreferences?.temperature || "Neutral",
-                        musicVolume: res.data.sensoryPreferences?.musicVolume || "Medium",
+                        favoriteMusic: res.sensoryPreferences?.favoriteMusic || "",
+                        drinkPreference: res.sensoryPreferences?.drinkPreference || "None",
+                        temperature: res.sensoryPreferences?.temperature || "Neutral",
+                        musicVolume: res.sensoryPreferences?.musicVolume || "Medium",
                     }
                 });
             } else {
@@ -178,8 +179,8 @@ export default function EditClientPage({ params }: { params: Promise<{ id: strin
                                             sensoryPreferences: { ...data.sensoryPreferences, temperature: temp as any }
                                         })}
                                         className={`p-2 text-sm rounded border transition-all ${data.sensoryPreferences.temperature === temp
-                                                ? "bg-[#D4AF37] text-black border-[#D4AF37] font-bold"
-                                                : "bg-transparent text-white/50 border-white/10 hover:border-white/30"
+                                            ? "bg-[#D4AF37] text-black border-[#D4AF37] font-bold"
+                                            : "bg-transparent text-white/50 border-white/10 hover:border-white/30"
                                             }`}
                                     >
                                         {temp === "Cool" ? "❄️ Frio" : temp === "Neutral" ? "✨ Neutro" : "🔥 Quente"}

@@ -27,7 +27,7 @@ export async function getMethodologySteps() {
             { id: 1, title: "Visagismo Analítico", description: "Análise da estrutura óssea e simetria facial para um design exclusivo.", order: 1, active: true, createdAt: now, updatedAt: now },
             { id: 2, title: "Health First", description: "Produtos de alta performance que nutrem enquanto embelezam, priorizando a saúde dos fios.", order: 2, active: true, createdAt: now, updatedAt: now },
             { id: 3, title: "Mapping Personalizado", description: "Mapeamento milimétrico de curvaturas e espessuras para harmonização perfeita.", order: 3, active: true, createdAt: now, updatedAt: now },
-            { id: 4, title: "Experiência Sensorial", description: "Aromaterapia e conforto absoluto para um momento de desconexão total.", order: 4, active: true, createdAt: now, updatedAt: now },
+            { id: 4, title: "Experiência Sensorial", description: "Aromaprocedimento e conforto absoluto para um momento de desconexão total.", order: 4, active: true, createdAt: now, updatedAt: now },
         ];
     }
 }
@@ -59,3 +59,8 @@ export async function deleteMethodologyStep(id: number) {
     revalidatePath("/admin/methodology");
     revalidatePath("/");
 }
+
+
+
+
+

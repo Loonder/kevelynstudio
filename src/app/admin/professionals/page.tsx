@@ -1,22 +1,20 @@
-import { db } from "@/lib/db"; // Use proper DB instance import
-import { professionals } from "@/db/schema";
+import { supabase } from "@/lib/supabase-client";
 import { GlassCard } from "@/components/ui/glass-card";
 import { LuxuryButton } from "@/components/ui/luxury-button";
 import { ProfessionalModal } from "@/components/admin/professionals/professional-modal";
-import { ProfessionalStatusToggle } from "@/components/admin/professionals/professional-status-toggle"; // Separate client component for switch
+import { ProfessionalStatusToggle } from "@/components/admin/professionals/professional-status-toggle";
 import { DeleteProfessionalButton } from "@/components/admin/professionals/delete-professional-button";
 import { Plus, User, Pencil } from "lucide-react";
 import Image from "next/image";
 
-export default async function ProfessionalsPage() {
-    const rawStaff = await db.query.professionals.findMany({
-        orderBy: (professionals, { desc }) => [desc(professionals.createdAt)]
-    });
+const TENANT_ID = process.env.TENANT_ID || 'kevelyn_studio';
 
-    const staff = rawStaff.map(pro => ({
-        ...pro,
-        createdAt: pro.createdAt?.toISOString() || null
-    }));
+export default async function ProfessionalsPage() {
+    const { data: staff } = await supabase
+        .from('professionals')
+        .select('*')
+        .eq('tenant_id', TENANT_ID)
+        .order('created_at', { ascending: false });
 
     return (
         <div className="max-w-[1600px] mx-auto p-8 space-y-8">
@@ -41,7 +39,7 @@ export default async function ProfessionalsPage() {
 
             {/* Team Gallery Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {staff.map((pro) => (
+                {(staff || []).map((pro) => (
                     <GlassCard key={pro.id} className="p-6 flex flex-col items-center text-center gap-4 group hover:border-[#D4AF37]/30 transition-all duration-300 relative overflow-hidden">
 
                         {/* Color Dot Indicator */}
@@ -53,9 +51,9 @@ export default async function ProfessionalsPage() {
 
                         {/* Avatar */}
                         <div className="w-24 h-24 rounded-full bg-gradient-to-br from-white/10 to-transparent p-1 border border-white/10 shadow-2xl relative">
-                            {pro.imageUrl ? (
+                            {pro.image_url ? (
                                 <Image
-                                    src={pro.imageUrl}
+                                    src={pro.image_url}
                                     alt={pro.name}
                                     fill
                                     className="object-cover rounded-full"
@@ -84,8 +82,8 @@ export default async function ProfessionalsPage() {
 
                         {/* Footer / Actions */}
                         <div className="mt-auto pt-6 w-full border-t border-white/5 flex items-center justify-between px-2">
-                            <span className={`text-xs font-medium ${pro.isActive ? "text-green-400" : "text-white/30"}`}>
-                                {pro.isActive ? "Ativo" : "Inativo"}
+                            <span className={`text-xs font-medium ${pro.is_active ? "text-green-400" : "text-white/30"}`}>
+                                {pro.is_active ? "Ativo" : "Inativo"}
                             </span>
                             <div className="flex items-center gap-1">
                                 <ProfessionalStatusToggle professional={pro} />
@@ -110,7 +108,7 @@ export default async function ProfessionalsPage() {
                     </GlassCard>
                 ))}
 
-                {staff.length === 0 && (
+                {(!staff || staff.length === 0) && (
                     <div className="col-span-full h-64 flex flex-col items-center justify-center text-white/30 border border-dashed border-white/10 rounded-xl">
                         <p>Nenhum profissional encontrado.</p>
                     </div>
@@ -119,3 +117,8 @@ export default async function ProfessionalsPage() {
         </div>
     );
 }
+
+
+
+
+

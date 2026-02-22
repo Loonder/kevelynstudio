@@ -28,3 +28,8 @@ export const parallaxImage = {
         transition: { duration: 1.5, ease: TRANSITION_EASE }
     }
 };
+
+
+
+
+

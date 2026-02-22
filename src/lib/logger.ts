@@ -101,3 +101,8 @@ export const loggers = {
 // import { loggers } from "@/lib/logger";
 // loggers.appointments.info("Appointment created", { appointmentId: "123" });
 // loggers.appointments.error("Failed to create", { error: err.message });
+
+
+
+
+

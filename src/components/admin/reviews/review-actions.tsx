@@ -10,7 +10,7 @@ export function ApproveReviewButton({ reviewId }: { reviewId: string }) {
     return (
         <button
             onClick={async () => {
-                await approveReview(reviewId);
+                await approveReview(reviewId, false);
                 toast.success("Depoimento aprovado!");
                 router.refresh(); // Or revalidatePath handling
             }}
@@ -40,3 +40,8 @@ export function DeleteReviewButton({ reviewId }: { reviewId: string }) {
         </button>
     );
 }
+
+
+
+
+

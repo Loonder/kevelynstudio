@@ -1,53 +1,93 @@
 "use server";
 
-import { db } from "@/lib/db";
-import { clients } from "@/db/schema";
-import { eq } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
+import { supabase } from "@/lib/supabase-client";
 
-export async function updateClient(
-    clientId: string,
-    data: {
-        fullName: string;
-        email: string;
-        phone: string;
-        sensoryPreferences: {
-            favoriteMusic?: string;
-            drinkPreference?: "Water" | "Coffee" | "Champagne" | "Tea" | "None";
-            temperature?: "Warm" | "Cool" | "Neutral";
-            musicVolume?: "Soft" | "Medium" | "Deep";
-        };
-        notes?: string;
-    }
-) {
+const TENANT_ID = process.env.TENANT_ID || 'kevelyn_studio';
+
+export async function getClients() {
     try {
-        await db.update(clients)
-            .set({
-                fullName: data.fullName,
+        const { data, error } = await supabase
+            .from('contacts')
+            .select('*')
+            .eq('tenant_id', TENANT_ID)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        return (data || []).map(c => ({
+            id: c.id,
+            name: c.name,
+            phone: c.phone,
+            status: c.status === 'lead' ? 'Lead' : 'Cliente',
+            created_at: c.created_at,
+            tags: []
+        }));
+    } catch (error) {
+        console.error("Failed to fetch clients from Supabase:", error);
+        return [];
+    }
+}
+
+export async function getClientById(id: string) {
+    try {
+        const { data: client, error: clientError } = await supabase
+            .from('contacts')
+            .select('*')
+            .eq('id', id)
+            .eq('tenant_id', TENANT_ID)
+            .single();
+
+        if (clientError) throw clientError;
+
+        const { data: history, error: historyError } = await supabase
+            .from('appointments')
+            .select('*, services(*), professionals(*)')
+            .eq('contact_id', id)
+            .eq('tenant_id', TENANT_ID)
+            .order('start_time', { ascending: false })
+            .limit(10);
+
+        if (historyError) throw historyError;
+
+        return {
+            ...client,
+            fullName: client.name, // Mapping for compatibility
+            history: (history || []).map(h => ({
+                ...h,
+                service: h.services,
+                professional: h.professionals
+            }))
+        };
+    } catch (error) {
+        console.error("Error fetching client profile from Supabase:", error);
+        return null;
+    }
+}
+
+export async function updateClient(id: string, data: any) {
+    try {
+        const { error } = await supabase
+            .from('contacts')
+            .update({
+                name: data.fullName || data.name,
                 email: data.email,
                 phone: data.phone,
-                sensoryPreferences: data.sensoryPreferences,
                 notes: data.notes,
+                sensory_preferences: data.sensoryPreferences
             })
-            .where(eq(clients.id, clientId));
+            .eq('id', id)
+            .eq('tenant_id', TENANT_ID);
 
-        revalidatePath('/admin/clients');
-        revalidatePath(`/admin/clients/edit/${clientId}`);
+        if (error) throw error;
         return { success: true };
     } catch (error) {
-        console.error("Update Client Error:", error);
-        return { success: false, error: "Falha ao atualizar cliente." };
+        console.error("Update Client Error (Supabase):", error);
+        return { success: false, error: "Erro ao atualizar cliente" };
     }
 }
 
-export async function getClient(clientId: string) {
-    try {
-        const client = await db.query.clients.findFirst({
-            where: eq(clients.id, clientId)
-        });
-        if (!client) return { success: false, error: "Cliente não encontrado" };
-        return { success: true, data: client };
-    } catch (error) {
-        return { success: false, error: "Erro ao buscar cliente" };
-    }
-}
+
+
+
+
+

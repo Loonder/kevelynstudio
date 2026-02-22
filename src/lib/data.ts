@@ -52,3 +52,8 @@ export const SERVICES: Service[] = [
         image: "/assets/images/service-lashes.png"
     }
 ];
+
+
+
+
+

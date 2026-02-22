@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Admin - Carregando...</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-box">
+            <h2>🔒 Acesso Restrito</h2>
+            <p id="tenantNameDisplay">Secretária Online</p>
+
+            <div id="loginForm">
+                <input type="email" id="emailInput" placeholder="Email (ex: kevelyn@loja.com)">
+                <input type="password" id="passwordInput" placeholder="Senha">
+                <button onclick="loginWithEmail()">Entrar</button>
+            </div>
+
+            <p class="separator">ou</p>
+
+            <input type="password" id="tokenInput" placeholder="Token de Acesso (QR Code)" style="font-size: 0.8rem;">
+            <button onclick="loginWithToken()" style="background: #ccc; color: #333; font-size: 0.8rem;">Entrar com
+                Token</button>
+
+            <p class="hint">Use suas credenciais de acesso.</p>
+        </div>
+    </div>
+
+    <div class="app-container" id="appContainer" style="display: none;">
+        <header>
+            <div class="logo">
+                <span class="icon">🌸</span>
+                <div class="text">
+                    <h1 id="headerBotName">Bot Name</h1>
+                    <p id="headerProfName">Professional Name</p>
+                </div>
+            </div>
+            <div class="status-badge" id="statusBadge">Conectando...</div>
+        </header>
+
+        <main>
+            <section class="stats-grid">
+                <div class="card">
+                    <h3>Mensagens Hoje</h3>
+                    <p class="big-number" id="msgCount">0</p>
+                </div>
+                <div class="card">
+                    <h3>Leads Totais</h3>
+                    <p class="big-number" id="leadsCount">0</p>
+                </div>
+                <div class="card">
+                    <h3>Uptime</h3>
+                    <p class="big-number" id="uptime">0h</p>
+                </div>
+            </section>
+
+            <section class="controls">
+                <div class="card">
+                    <h3>🚀 Ações Rápidas</h3>
+                    <div class="buttons">
+                        <button class="btn-pause" onclick="togglePause()" id="btnPause">Pausar Bot</button>
+                        <button class="btn-refresh" onclick="fetchStatus()">Atualizar</button>
+                        <button class="btn-crm" onclick="showCrm()">👥 CRM & Leads</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CRM Section (Hidden by default) -->
+            <section id="crmSection" class="crm-section" style="display: none;">
+                <div class="card full-width">
+                    <div class="card-header">
+                        <h3>👥 Gestão de Leads</h3>
+                        <div class="crm-actions">
+                            <button onclick="fetchLeads('all')" class="filter-btn">Todos</button>
+                            <button onclick="fetchLeads('tag', 'LEAD')" class="filter-btn">Leads</button>
+                            <button onclick="fetchLeads('tag', 'CLIENTE')" class="filter-btn">Clientes</button>
+                            <button onclick="openBroadcastModal()" class="broadcast-btn">📢 Disparo em Massa</button>
+                        </div>
+                    </div>
+                    <div id="leadsList" class="leads-list">
+                        <p>Carregando leads...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Broadcast Modal -->
+            <div id="broadcastModal" class="login-overlay" style="display: none;">
+                <div class="login-box" style="width: 400px; text-align: left;">
+                    <h3>📢 Novo Disparo</h3>
+                    <p>Envie uma mensagem para os leads selecionados.</p>
+
+                    <label>Mensagem:</label>
+                    <textarea id="broadcastMsg" rows="5" placeholder="Olá! Temos uma promoção especial..."
+                        style="width: 100%; margin-bottom: 1rem;"></textarea>
+
+                    <p style="font-size: 0.8rem; color: orange;">⚠️ Cuidado com SPAM. Envie apenas conteúdos relevantes.
+                    </p>
+
+                    <div class="buttons">
+                        <button onclick="closeBroadcastModal()" style="background: #ccc; color: #333;">Cancelar</button>
+                        <button onclick="sendBroadcast()" style="background: var(--primary);">Enviar Agora</button>
+                    </div>
+                </div>
+            </div>
+
+            <section class="agenda">
+                <div class="card full-width">
+                    <div class="card-header">
+                        <h3>📅 Agenda</h3>
+                        <input type="date" id="agendaDate" onchange="fetchAgenda()">
+                    </div>
+                    <div id="agendaList" class="agenda-list">
+                        <p>Carregando agenda...</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
+

@@ -1,17 +1,18 @@
-import { db } from "@/lib/db";
-import { blogPosts } from "@/db/schema";
-import { desc } from "drizzle-orm";
+import { supabase } from "@/lib/supabase-client";
 import { GlassCard } from "@/components/ui/glass-card";
 import { LuxuryButton } from "@/components/ui/luxury-button";
-import { Plus, Edit2, Eye } from "lucide-react";
+import { Plus } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { AdminBlogList } from "@/components/admin/blog/admin-blog-list";
 
+const TENANT_ID = process.env.TENANT_ID || 'kevelyn_studio';
+
 export default async function AdminBlogPage() {
-    const posts = await db.select().from(blogPosts).orderBy(desc(blogPosts.createdAt));
+    const { data: posts } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .eq('tenant_id', TENANT_ID)
+        .order('created_at', { ascending: false });
 
     return (
         <div className="space-y-8">
@@ -27,7 +28,13 @@ export default async function AdminBlogPage() {
                 </Link>
             </div>
 
-            <AdminBlogList posts={posts} />
+            <AdminBlogList posts={posts || []} />
         </div>
     );
 }
+
+
+
+
+
+

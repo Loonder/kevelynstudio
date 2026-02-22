@@ -100,3 +100,8 @@ export function ServiceList({ initialServices, onEdit }: ServiceListProps) {
         </DndContext>
     );
 }
+
+
+
+
+

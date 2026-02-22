@@ -60,3 +60,8 @@ export function ChurnRiskCard({ clients }: ChurnCardProps) {
         </GlassCard>
     );
 }
+
+
+
+
+

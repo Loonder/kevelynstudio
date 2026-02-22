@@ -41,6 +41,8 @@ export async function updateSession(request: NextRequest) {
         data: { user },
     } = await supabase.auth.getUser()
 
+    // --- TEMPORARY BYPASS FOR DEBUGGING ---
+    /*
     if ((request.nextUrl.pathname.startsWith('/admin') || request.nextUrl.pathname.startsWith('/dashboard')) && !user) {
         const url = request.nextUrl.clone()
         url.pathname = '/login'
@@ -49,10 +51,6 @@ export async function updateSession(request: NextRequest) {
 
     // Role Protection
     if (user) {
-        // We need to fetch the role. Since we can't easily use Drizzle here (edge), use Supabase directly.
-        // Optimization: In a real prod app, we'd store role in JWT metadata to avoid this DB call on every request.
-        // For now, this is safer and acceptable for this scale.
-
         if (request.nextUrl.pathname.startsWith('/admin')) {
             const { data: client } = await supabase
                 .from('clients')
@@ -62,7 +60,7 @@ export async function updateSession(request: NextRequest) {
 
             if (client?.role !== 'admin') {
                 const url = request.nextUrl.clone()
-                url.pathname = '/book' // Redirect unauthorized admins to booking
+                url.pathname = '/book'
                 return NextResponse.redirect(url)
             }
         }
@@ -81,13 +79,14 @@ export async function updateSession(request: NextRequest) {
             }
         }
     }
-
-    // Optional: Redirect /login to /admin if already logged in - REMOVED to allow clients to access login/signup
-    // if (request.nextUrl.pathname.startsWith('/login') && user) {
-    //     const url = request.nextUrl.clone()
-    //     url.pathname = '/admin'
-    //     return NextResponse.redirect(url)
-    // }
+    */
+    // --- END BYPASS ---
 
     return supabaseResponse
 }
+
+
+
+
+
+

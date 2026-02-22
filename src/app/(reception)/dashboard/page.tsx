@@ -1,10 +1,10 @@
-import { db } from "@/lib/db";
-import { appointments, clients, services, professionals } from "@/db/schema";
-import { eq, and, gte, lte, asc } from "drizzle-orm";
-import { ReceptionClient, type Appointment } from "@/app/(reception)/dashboard/reception-client";
+import { supabase } from "@/lib/supabase-client";
+import { ReceptionClient } from "@/app/(reception)/dashboard/reception-client";
+
+const TENANT_ID = process.env.TENANT_ID || 'kevelyn_studio';
 
 export default async function ReceptionDashboard() {
-    let appointmentsData: any[] = [];
+    let serializedAppointments: any[] = [];
 
     try {
         // Brazil Time Logic
@@ -16,49 +16,69 @@ export default async function ReceptionDashboard() {
         const startOfTodayBR = new Date(brazilTime);
         startOfTodayBR.setHours(0, 0, 0, 0);
 
-        // Convert back to UTC for DB query
-        const today = new Date(startOfTodayBR.getTime() + (3 * 60 * 60 * 1000));
-        const tonight = new Date(today.getTime() + (24 * 60 * 60 * 1000) - 1);
+        const endOfTodayBR = new Date(startOfTodayBR);
+        endOfTodayBR.setHours(23, 59, 59, 999);
 
-        const results = await db
-            .select({
-                id: appointments.id,
-                startTime: appointments.startTime,
-                status: appointments.status,
+        // Fetch from Supabase
+        const { data: results, error } = await supabase
+            .from('appointments')
+            .select(`
+                id,
+                start_time,
+                status,
+                contacts!contact_id (
+                    id,
+                    full_name,
+                    sensory_preferences,
+                    technical_notes
+                ),
+                services!service_id (
+                    title
+                ),
+                professionals!professional_id (
+                    name
+                )
+            `)
+            .eq('tenant_id', TENANT_ID)
+            .gte('start_time', startOfTodayBR.toISOString())
+            .lte('start_time', endOfTodayBR.toISOString())
+            .order('start_time', { ascending: true });
+
+        if (error) throw error;
+
+        serializedAppointments = (results || []).map(appt => {
+            // Supabase joins can return arrays or single objects depending on the schema detection
+            const client = Array.isArray(appt.contacts) ? appt.contacts[0] : appt.contacts;
+            const service = Array.isArray(appt.services) ? appt.services[0] : appt.services;
+            const professional = Array.isArray(appt.professionals) ? appt.professionals[0] : appt.professionals;
+
+            return {
+                id: appt.id,
+                startTime: appt.start_time,
+                status: appt.status,
                 client: {
-                    id: clients.id,
-                    fullName: clients.fullName,
-                    sensoryPreferences: clients.sensoryPreferences,
-                    technicalNotes: clients.technicalNotes,
+                    id: client?.id,
+                    fullName: client?.full_name,
+                    sensoryPreferences: client?.sensory_preferences,
+                    technicalNotes: client?.technical_notes,
                 },
                 service: {
-                    title: services.title,
+                    title: service?.title,
                 },
                 professional: {
-                    name: professionals.name,
+                    name: professional?.name,
                 }
-            })
-            .from(appointments)
-            .innerJoin(clients, eq(appointments.clientId, clients.id))
-            .innerJoin(services, eq(appointments.serviceId, services.id))
-            .innerJoin(professionals, eq(appointments.professionalId, professionals.id))
-            .where(
-                and(
-                    gte(appointments.startTime, today),
-                    lte(appointments.startTime, tonight)
-                )
-            )
-            .orderBy(asc(appointments.startTime));
-
-        appointmentsData = results;
+            };
+        });
     } catch (error) {
         console.error("Reception data fetch error:", error);
     }
 
-    const serializedAppointments = appointmentsData.map(appt => ({
-        ...appt,
-        startTime: appt.startTime instanceof Date ? appt.startTime.toISOString() : appt.startTime,
-    }));
-
     return <ReceptionClient appointments={serializedAppointments} />;
 }
+
+
+
+
+
+

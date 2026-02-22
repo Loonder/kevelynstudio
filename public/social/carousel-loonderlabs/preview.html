@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Preview - Kevelyn Company x @loonderlabs</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Outfit:wght@100;300;400&display=swap');
+
+        :root {
+            --gold: #D4AF37;
+            --black: #050505;
+            --ig-gray: #262626;
+        }
+
+        body {
+            background-color: #000;
+            color: #fff;
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Phone Frame */
+        .phone-mockup {
+            width: 375px;
+            height: 750px;
+            background: #000;
+            border: 12px solid #1a1a1a;
+            border-radius: 40px;
+            position: relative;
+            box-shadow: 0 0 50px rgba(212, 175, 55, 0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Instagram UI Header */
+        .ig-header {
+            padding: 15px 15px 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 0.5px solid #262626;
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+            padding: 2px;
+        }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: #000;
+            object-fit: cover;
+        }
+
+        .username {
+            font-size: 14px;
+            font-weight: 600;
+            flex: 1;
+        }
+
+        .more-options {
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        /* Carousel Content */
+        .carousel-main {
+            position: relative;
+            flex: 0 0 375px;
+            /* Square Post */
+            height: 375px;
+            overflow: hidden;
+        }
+
+        .slides-container {
+            display: flex;
+            height: 100%;
+            transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+            width: 600%;
+            /* Total 6 slides */
+        }
+
+        .slide {
+            flex: 0 0 375px;
+            height: 100%;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px;
+            box-sizing: border-box;
+            background: #000;
+        }
+
+        .slide img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.85;
+            z-index: 1;
+        }
+
+        .slide-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.8));
+            z-index: 2;
+        }
+
+        .slide-content {
+            position: relative;
+            z-index: 3;
+            max-width: 90%;
+        }
+
+        .slide-brand {
+            font-family: 'Cormorant Garamond', serif;
+            font-style: italic;
+            color: var(--gold);
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+            letter-spacing: 0.1em;
+        }
+
+        .slide h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.8rem;
+            margin: 0 0 10px;
+            line-height: 1.1;
+            text-transform: uppercase;
+            text-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+        }
+
+        .slide p {
+            font-size: 0.85rem;
+            font-weight: 300;
+            opacity: 0.7;
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        /* IG Interactions */
+        .ig-actions {
+            padding: 10px 15px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .action-icon {
+            font-size: 24px;
+            opacity: 0.9;
+        }
+
+        .dots-container {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 4px;
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            background: #555;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+
+        .dot.active {
+            background: #3897f0;
+            transform: scale(1.2);
+        }
+
+        /* Captions Area */
+        .ig-caption-area {
+            padding: 0 15px 15px;
+            flex: 1;
+            overflow-y: auto;
+            font-size: 13px;
+        }
+
+        .likes {
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .caption-text b {
+            margin-right: 5px;
+        }
+
+        .hashtags {
+            color: #00376b;
+            margin-top: 10px;
+            display: block;
+        }
+
+        /* Controls */
+        .nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.5);
+            border: none;
+            color: white;
+            padding: 10px;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 10;
+            font-size: 12px;
+            backdrop-filter: blur(4px);
+        }
+
+        .prev-btn {
+            left: 10px;
+        }
+
+        .next-btn {
+            right: 10px;
+        }
+
+        .slide-counter {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            z-index: 10;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="phone-mockup">
+        <!-- Header -->
+        <div class="ig-header">
+            <div class="avatar">
+                <img src="../../images/generated/hero_lashes_1769449267789.png" alt="Loonder Labs">
+            </div>
+            <div class="username">loonderlabs</div>
+            <div class="more-options">⋯</div>
+        </div>
+
+        <!-- Carousel -->
+        <div class="carousel-main" id="carousel">
+            <button class="nav-btn prev-btn" id="prev">◀</button>
+            <button class="nav-btn next-btn" id="next">▶</button>
+            <div class="slide-counter"><span id="current-index">1</span>/6</div>
+
+            <div class="slides-container" id="slides">
+                <!-- Slide 1: Cover/Intro -->
+                <div class="slide">
+                    <img src="../../social/carousel-loonderlabs/slide5_company_intro.png">
+                    <div class="slide-overlay"></div>
+                    <div class="slide-content">
+                        <div class="slide-brand">Kevelyn Company</div>
+                        <h2>A Evolução do Olhar</h2>
+                        <p>Onde a tecnologia @loonderlabs encontra a arte da beleza.</p>
+                    </div>
+                </div>
+                <!-- Slide 2: Lash Hero -->
+                <div class="slide">
+                    <img src="../../social/carousel-loonderlabs/slide2_mockup_v7.png">
+                    <div class="slide-overlay"></div>
+                    <div class="slide-content">
+                        <div class="slide-brand">High-End Lashes</div>
+                        <h2>Precisão em Cada Fio</h2>
+                        <p>Volume Russo e Brasileiro com técnica exclusiva e conforto absoluto.</p>
+                    </div>
+                </div>
+                <!-- Slide 3: Brow Hero -->
+                <div class="slide">
+                    <img src="../../social/carousel-loonderlabs/slide2_brows.png">
+                    <div class="slide-overlay"></div>
+                    <div class="slide-content">
+                        <div class="slide-brand">Artistic Brows</div>
+                        <h2>Geometria Facial</h2>
+                        <p>Design estratégico e Nanoblading para um olhar harmonioso e imponente.</p>
+                    </div>
+                </div>
+                <!-- Slide 4: Tech/Mapping -->
+                <div class="slide">
+                    <img src="../../social/carousel-loonderlabs/slide3_mapping.png">
+                    <div class="slide-overlay"></div>
+                    <div class="slide-content">
+                        <div class="slide-brand">Metodologia</div>
+                        <h2>Arquitetura do Olhar</h2>
+                        <p>Mapeamento facial personalizado para realçar sua beleza única.</p>
+                    </div>
+                </div>
+                <!-- Slide 5: Medusa (Petrifying Gaze) -->
+                <div class="slide">
+                    <img id="medusa-img"
+                        src="../../social/carousel-loonderlabs/medusa_kevelyn_company_final_v11_1770965334032.png">
+                    <div class="slide-overlay"
+                        style="background: linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.9));"></div>
+                    <div class="slide-content">
+                        <div class="slide-brand">High-Concept</div>
+                        <h2 style="color: var(--gold); letter-spacing: 0.2em;">Olhar Petrificante</h2>
+                        <p>Beleza que paralisa. Inspiração mítica, maestria real Kevelyn Company.</p>
+                    </div>
+                </div>
+                <!-- Slide 6: Loonder Labs CTA -->
+                <div class="slide">
+                    <img src="../../social/carousel-loonderlabs/loonder_labs_finale.png">
+                    <div class="slide-overlay"
+                        style="background: linear-gradient(to bottom, rgba(0, 0, 0, 0.4), var(--black));"></div>
+                    <div class="slide-content">
+                        <div class="slide-brand">Build Your Empire</div>
+                        <h2 style="color: var(--gold); letter-spacing: 0.1em;">Seu Império Digital</h2>
+                        <p>Design de elite para marcas que dominam o mercado. Construa seu site conosco.</p>
+                        <div
+                            style="margin-top: 20px; padding: 10px 20px; border: 1px solid var(--gold); display: inline-block; font-size: 0.7rem; letter-spacing: 0.2em; color: var(--gold);">
+                            LOONDER LABS</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dots-container">
+                <div class="dot active"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+        </div>
+
+        <!-- Interactions -->
+        <div class="ig-actions">
+            <div class="action-icon">♡</div>
+            <div class="action-icon">💬</div>
+            <div class="action-icon">✈</div>
+            <div style="flex: 1"></div>
+            <div class="action-icon">🔖</div>
+        </div>
+
+        <!-- Caption -->
+        <div class="ig-caption-area">
+            <span class="likes">Curtido por kevelyn_company e outras pessoas</span>
+            <div class="caption-text">
+                <b>loonderlabs</b> Onde a tecnologia encontra a arte. Onde o detalhe é a prioridade absoluta.
+                <br><br>
+                Bem-vindos à nova era. @loonderlabs orgulhosamente apresenta o novo ecossistema digital da Kevelyn
+                Company.
+                <br>
+                <span class="hashtags">#KevelynCompany #LoonderLabs #MedusaLook #PetrifyingBeauty</span>
+                <br><br>
+                <b>[Slide 5] OLHAR PETRIFICANTE</b>: Sabia que o segredo de Medusa era na verdade um design de cílios
+                impossível de ignorar? Na @kevelyncompany, levamos o 'olhar que paralisa' para o próximo nível. 🐍💎
+                <br><br>
+                <b>[Slide 6] GRAN FINALE</b>: O seu império digital começa com uma visão. Na @loonderlabs, transformamos
+                essa visão em autoridade inquestionável. Cansado do comum? Vamos construir o extraordinário. 🚀🍾
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const slides = document.getElementById('slides');
+        const next = document.getElementById('next');
+        const prev = document.getElementById('prev');
+        const dots = document.querySelectorAll('.dot');
+        const counter = document.getElementById('current-index');
+
+        let index = 0;
+        const totalSlides = 6;
+
+        function update() {
+            slides.style.transform = `translateX(-${index * 375}px)`;
+            dots.forEach((dot, i) => dot.classList.toggle('active', i === index));
+            counter.innerText = index + 1;
+
+            prev.style.display = index === 0 ? 'none' : 'block';
+            next.style.display = index === totalSlides - 1 ? 'none' : 'block';
+        }
+
+        next.addEventListener('click', () => {
+            if (index < totalSlides - 1) {
+                index++;
+                update();
+            }
+        });
+
+        prev.addEventListener('click', () => {
+            if (index > 0) {
+                index--;
+                update();
+            }
+        });
+
+        // Touch support (simple)
+        let startX = 0;
+        slides.addEventListener('touchstart', (e) => startX = e.touches[0].clientX);
+        slides.addEventListener('touchend', (e) => {
+            const endX = e.changedTouches[0].clientX;
+            if (startX - endX > 50) next.click();
+            if (endX - startX > 50) prev.click();
+        });
+
+        update();
+    </script>
+</body>
+
+</html>

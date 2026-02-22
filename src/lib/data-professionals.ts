@@ -11,9 +11,9 @@ export type Professional = {
 export const PROFESSIONALS: Professional[] = [
     {
         id: "kevelyn",
-        name: "Kevelyn",
+        name: "Gabriela Kevelyn",
         role: "Founder & Master Artist",
-        bio: "Pioneira na técnica de Nanopigmentação Fio a Fio. Com mais de 2.000 alunas formadas, Kevelyn transformou o mercado de beleza unindo precisão matemática e arte.",
+        bio: "Pioneira na técnica de Nanopigmentação Fio a Fio. Com mais de 2.000 alunas formadas, Gabriela Kevelyn transformou o mercado de beleza unindo precisão matemática e arte.",
         image: "/assets/images/reveal-portrait.jpg", // Using this existing asset for now
         instagram: "@kevelynbeauty",
         specialties: ["Nanopigmentação", "Micropigmentação Labial", "Cursos"]
@@ -28,3 +28,8 @@ export const PROFESSIONALS: Professional[] = [
         specialties: ["Lash Lifting", "Extensão Volume Russo", "Brow Lamination"]
     }
 ];
+
+
+
+
+

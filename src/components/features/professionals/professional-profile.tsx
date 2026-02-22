@@ -60,3 +60,8 @@ export function ProfessionalProfile({ professional }: { professional: Profession
         </section>
     );
 }
+
+
+
+
+

@@ -47,3 +47,8 @@ export function DeleteProfessionalButton({ professionalId, professionalName }: D
         </button>
     );
 }
+
+
+
+
+

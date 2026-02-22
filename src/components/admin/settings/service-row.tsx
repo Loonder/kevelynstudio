@@ -101,3 +101,8 @@ export function ServiceRow({ service, onEdit, onToggleFeatured }: ServiceRowProp
         </div>
     );
 }
+
+
+
+
+

@@ -24,3 +24,8 @@ export const APPOINTMENT_STATUS = {
 } as const;
 
 export type AppointmentStatus = typeof APPOINTMENT_STATUS[keyof typeof APPOINTMENT_STATUS];
+
+
+
+
+

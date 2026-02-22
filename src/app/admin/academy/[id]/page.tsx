@@ -5,9 +5,9 @@ import { notFound } from "next/navigation";
 import { CourseManager } from "@/components/admin/academy/course-manager";
 
 interface CoursePageProps {
-    params: {
+    params: Promise<{
         id: string;
-    }
+    }>
 }
 
 export default async function AdminCoursePage({ params }: CoursePageProps) {

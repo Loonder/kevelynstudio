@@ -1,0 +1,114 @@
+/* Custom Calendar Styles for Luxury Dark Theme */
+
+.rbc-calendar {
+    font-family: var(--font-sans);
+    color: #e5e5e5;
+}
+
+.rbc-header {
+    padding: 1rem 0;
+    font-family: var(--font-outfit);
+    text-transform: uppercase;
+    letter-spacing: 0.2rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #D4AF37;
+    /* Primary Gold */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.rbc-month-view,
+.rbc-time-view,
+.rbc-agenda-view {
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    background-color: rgba(5, 5, 5, 0.5);
+    backdrop-filter: blur(10px);
+}
+
+.rbc-day-bg {
+    border-left: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.rbc-off-range-bg {
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.rbc-today {
+    background-color: rgba(212, 175, 55, 0.05) !important;
+    /* Subtle Gold Tint */
+}
+
+.rbc-event {
+    background-color: #D4AF37 !important;
+    border: 1px solid #AA8C2C !important;
+    color: #000 !important;
+    border-radius: 0px !important;
+    font-size: 0.7rem;
+    padding: 2px 5px !important;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.rbc-event:hover {
+    transform: scale(1.02);
+    z-index: 10;
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+}
+
+.rbc-time-content {
+    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.rbc-time-header-content {
+    border-left: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.rbc-timeslot-group {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.rbc-time-gutter .rbc-timeslot-group {
+    border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+    font-family: var(--font-mono);
+    /* Monospace for time */
+    font-size: 0.65rem;
+    color: #666;
+}
+
+.rbc-current-time-indicator {
+    background-color: #D4AF37 !important;
+    height: 1px !important;
+}
+
+/* Toolbar adjustments */
+.rbc-toolbar {
+    margin-bottom: 2rem !important;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.rbc-toolbar button {
+    color: #fff !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    font-family: var(--font-sans);
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    padding: 0.5rem 1rem !important;
+    border-radius: 0px !important;
+}
+
+.rbc-toolbar button:hover,
+.rbc-toolbar button:active,
+.rbc-toolbar button.rbc-active {
+    background-color: #D4AF37 !important;
+    color: #000 !important;
+    border-color: #D4AF37 !important;
+}
+
+.rbc-toolbar-label {
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    color: #fff;
+    text-transform: none;
+}

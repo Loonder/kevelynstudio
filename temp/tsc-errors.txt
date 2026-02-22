@@ -1,3 +1,0 @@
-﻿src/app/page.tsx(33,29): error TS2322: Type '{ id: number; title: string; description: string; order: number; active: boolean | null; createdAt: Date | null; updatedAt: Date | null; }[] | { id: number; title: string; description: string; order: number; active: boolean; }[]' is not assignable to type 'MethodologyStep[]'.
-  Type '{ id: number; title: string; description: string; order: number; active: boolean; }[]' is not assignable to type 'MethodologyStep[]'.
-    Type '{ id: number; title: string; description: string; order: number; active: boolean; }' is missing the following properties from type 'MethodologyStep': createdAt, updatedAt

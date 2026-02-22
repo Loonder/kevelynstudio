@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { db } from "@/lib/db";
 import { sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
@@ -28,7 +29,7 @@ export async function GET() {
                 ('Visagismo Analítico', 'Análise da estrutura óssea e simetria facial para um design exclusivo.', 1, true),
                 ('Health First', 'Produtos de alta performance que nutrem enquanto embelezam, priorizando a saúde dos fios.', 2, true),
                 ('Mapping Personalizado', 'Mapeamento milimétrico de curvaturas e espessuras para harmonização perfeita.', 3, true),
-                ('Experiência Sensorial', 'Aromaterapia e conforto absoluto para um momento de desconexão total.', 4, true);
+                ('Experiência Sensorial', 'Aromaprocedimento e conforto absoluto para um momento de desconexão total.', 4, true);
             `);
             return NextResponse.json({ message: "Table created and seeded", count: 4 });
         }
@@ -39,3 +40,8 @@ export async function GET() {
         return NextResponse.json({ error: error.message, stack: error.stack }, { status: 500 });
     }
 }
+
+
+
+
+

@@ -29,3 +29,8 @@ export async function updateClientPreferences(clientId: string, preferences: Sen
         return { success: false, error: "Erro ao salvar preferências" };
     }
 }
+
+
+
+
+

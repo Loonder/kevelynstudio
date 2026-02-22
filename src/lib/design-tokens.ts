@@ -103,3 +103,8 @@ export function cssVar(name: string): string {
 // Type exports
 export type ColorKey = keyof typeof colors;
 export type AgendaColor = keyof typeof colors.agenda;
+
+
+
+
+

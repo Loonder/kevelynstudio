@@ -216,3 +216,8 @@ export function AppointmentDetailModal({ appointment, open, onOpenChange, onEdit
         </Dialog>
     );
 }
+
+
+
+
+

@@ -15,7 +15,7 @@ export function TeamSection() {
                         <h2 className="font-serif text-4xl md:text-5xl text-white">Artistas da <br /> Excelência</h2>
                     </div>
                     <p className="text-white/50 max-w-md text-sm leading-relaxed">
-                        Profissionais selecionadas e treinadas rigorosamente sob a metodologia Kevelyn Studio.
+                        Profissionais selecionadas e treinadas rigorosamente sob a metodologia Kevelyn Company.
                     </p>
                 </div>
 
@@ -67,3 +67,8 @@ export function TeamSection() {
         </section>
     );
 }
+
+
+
+
+

@@ -73,3 +73,8 @@ export function SensoryProfileCard({ preferences }: SensoryProfileProps) {
         </GlassCard>
     );
 }
+
+
+
+
+

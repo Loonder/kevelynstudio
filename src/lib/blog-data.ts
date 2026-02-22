@@ -311,7 +311,7 @@ export const BLOG_POSTS: BlogPost[] = [
     {
         title: "Recuperação de Sobrancelhas: Do Pinçamento Excessivo ao Volume",
         slug: "recuperacao-sobrancelhas-crescimento",
-        excerpt: "Anos de pinça fina deixaram marcas. Conheça os protocolos de argiloterapia e estimulação que podem trazer seus fios de volta.",
+        excerpt: "Anos de pinça fina deixaram marcas. Conheça os protocolos de argiloprocedimento e estimulação que podem trazer seus fios de volta.",
         coverImageUrl: "https://images.unsplash.com/photo-1583001931096-959e9ad7b535?q=80&w=1000&auto=format&fit=crop",
         category: "Brows",
         date: "2024-01-28",
@@ -327,7 +327,7 @@ export const BLOG_POSTS: BlogPost[] = [
             { type: 'paragraph', text: "A paciência é a chave, mas aceleramos o processo com ciência:" },
             {
                 type: 'list', items: [
-                    "Argiloterapia: Desintoxica o bulbo capilar e estimula a circulação.",
+                    "Argiloprocedimento: Desintoxica o bulbo capilar e estimula a circulação.",
                     "Alta Frequência: O ozônio é bactericida e vasodilatador, nutrindo a raiz.",
                     "Fatores de Crescimento: Blends de óleos essenciais (alecrim, rícino) para uso home care."
                 ]
@@ -353,7 +353,7 @@ export const BLOG_POSTS: BlogPost[] = [
             { type: 'paragraph', text: "A Henna sofre preconceito por trabalhos antigos que deixavam o visual 'carimbado'. A técnica Ombré veio para mudar isso, trazendo a sofisticação da maquiagem profissional para o design semi-permanente." },
             { type: 'h2', text: "O Efeito Degradê" },
             { type: 'paragraph', text: "O segredo está na saturação. Começamos com a cauda da sobrancelha bem definida e escura, e vamos clareando gradualmente em direção ao início (cabeça) da sobrancelha. O início deve ser etéreo, quase transparente, sem linhas duras." },
-            { type: 'paragraph', text: "Isso cria leveza. O rosto não fica 'pesado'. Utilizamos misturas de tons frios e quentes para casar perfeitamente com a raiz do seu cabelo, fugindo do preto artificial." },
+            { type: 'paragraph', text: "Isso cria leveza. O rosto não fica 'pesado'. Utilizamos misturas de tons frios e quentes para casar perfeitamente com os seus pelos naturais, fugindo do preto artificial." },
             { type: 'image', url: "https://images.unsplash.com/photo-1481819613568-3701cbc70156?q=80&w=1000&auto=format&fit=crop", alt: "Sobrancelha com efeito Ombré", caption: "Suavidade no início, definição no final. O equilíbrio perfeito." }
         ]
     },
@@ -404,3 +404,8 @@ export const BLOG_POSTS: BlogPost[] = [
         ]
     }
 ];
+
+
+
+
+

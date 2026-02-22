@@ -1,73 +1,80 @@
 "use server";
 
-import { db } from "@/lib/db";
-import { appointments, clients, services, professionals } from "@/db/schema";
-import { eq, and, gte, lte, lt, gt, ne } from "drizzle-orm";
+import { supabase } from "@/lib/supabase-client";
 import { revalidatePath } from "next/cache";
+
+const TENANT_ID = process.env.TENANT_ID || 'kevelyn_studio';
 
 export type BookingInput = {
     serviceId: string;
     professionalId: string;
     date: Date;
     timeSlot: string;
-    clientId: string; // Now we expect authenticated client ID
-    phone?: string; // Optional phone update
+    clientId: string;
+    phone?: string;
 };
 
 export async function createAppointment(data: BookingInput) {
     try {
-        // 1. Calculate Start/End Time
         const [hours, minutes] = data.timeSlot.split(':').map(Number);
-
         const startTime = new Date(data.date);
         startTime.setHours(hours, minutes, 0, 0);
 
         // Fetch service duration
-        const service = await db.query.services.findFirst({
-            where: eq(services.id, data.serviceId)
-        });
+        const { data: service, error: serviceError } = await supabase
+            .from('services')
+            .select('duration_minutes')
+            .eq('id', data.serviceId)
+            .single();
 
-        if (!service) throw new Error("Service not found");
+        if (serviceError || !service) throw new Error("Service not found");
 
-        const endTime = new Date(startTime.getTime() + (service.durationMinutes * 60000));
+        const endTime = new Date(startTime.getTime() + (service.duration_minutes * 60000));
 
-        // 2. CHECK AVAILABILITY (Conflict Detection)
-        const conflict = await db.query.appointments.findFirst({
-            where: and(
-                eq(appointments.professionalId, data.professionalId),
-                lt(appointments.startTime, endTime),
-                gt(appointments.endTime, startTime),
-                ne(appointments.status, 'cancelled')
-            )
-        });
+        // 2. CHECK AVAILABILITY
+        const { data: conflicts, error: conflictError } = await supabase
+            .from('appointments')
+            .select('id')
+            .eq('professional_id', data.professionalId)
+            .lt('start_time', endTime.toISOString())
+            .gt('end_time', startTime.toISOString())
+            .neq('status', 'cancelled')
+            .limit(1);
 
-        if (conflict) {
+        if (conflictError) throw conflictError;
+
+        if (conflicts && conflicts.length > 0) {
             return { success: false, error: "Este horário já foi reservado por outra cliente. Por favor, escolha outro." };
         }
 
         // 3. Update phone if provided
         if (data.phone) {
-            await db.update(clients)
-                .set({ phone: data.phone })
-                .where(eq(clients.id, data.clientId));
+            await supabase
+                .from('contacts')
+                .update({ phone: data.phone })
+                .eq('id', data.clientId);
         }
 
         // 4. Create Appointment
-        const newAppointment = await db.insert(appointments).values({
-            clientId: data.clientId,
-            professionalId: data.professionalId,
-            serviceId: data.serviceId,
-            startTime,
-            endTime,
-            status: "confirmed",
-        }).returning();
+        const { data: newAppt, error: createError } = await supabase
+            .from('appointments')
+            .insert({
+                contact_id: data.clientId,
+                professional_id: data.professionalId,
+                service_id: data.serviceId,
+                start_time: startTime.toISOString(),
+                end_time: endTime.toISOString(),
+                status: "confirmed",
+                tenant_id: TENANT_ID
+            })
+            .select()
+            .single();
 
-        // Revalidate admin dashboard
+        if (createError) throw createError;
+
         revalidatePath('/admin');
-        revalidatePath('/(reception)/dashboard');
-        revalidatePath('/my-appointments');
-
-        return { success: true, appointmentId: newAppointment[0].id };
+        revalidatePath('/admin/calendar');
+        return { success: true, appointmentId: newAppt.id };
 
     } catch (error) {
         console.error("[Booking] Error:", error);
@@ -77,17 +84,23 @@ export async function createAppointment(data: BookingInput) {
 
 export async function updateAppointmentStatus(appointmentId: string, status: "pending" | "confirmed" | "completed" | "cancelled") {
     try {
-        await db.update(appointments)
-            .set({ status })
-            .where(eq(appointments.id, appointmentId));
+        const { error } = await supabase
+            .from('appointments')
+            .update({ status })
+            .eq('id', appointmentId)
+            .eq('tenant_id', TENANT_ID);
+
+        if (error) throw error;
 
         revalidatePath('/admin/calendar');
         revalidatePath('/admin');
-        revalidatePath('/(reception)/dashboard');
-
         return { success: true };
     } catch (error) {
         console.error("Update Status Error:", error);
         return { success: false, error: "Falha ao atualizar status." };
     }
 }
+
+
+
+

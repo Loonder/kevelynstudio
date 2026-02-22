@@ -409,3 +409,6 @@ npx tsx seed.ts           # Seed inicial (serviços, profissionais)
 **Versão do Documento**: 1.0
 **Última Atualização**: Janeiro 2026
 **Projeto**: Kevelyn Studio - Beauty Studio Management Platform
+
+
+

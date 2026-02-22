@@ -1,0 +1,120 @@
+{
+    "tenant_id": "kevelyn_beauty",
+    "bot": {
+        "name": "Assistente Kevelyn Beauty",
+        "tone": "amigável e estético"
+    },
+    "professional": {
+        "name": "Kevelyn",
+        "title": "Especialista em Beleza",
+        "address": "R. Marajó, 9 - Jardim Santa Julia, Itapecerica da Serra - SP, 06867-440",
+        "pixKey": "230.515.438-02",
+        "pixName": "Kevelyn Beauty Company",
+        "pixCity": "ITAPECERICA DA SERRA"
+    },
+    "google": {
+        "calendarId": "primary"
+    },
+    "services": [
+        {
+            "id": "design_sobrancelhas",
+            "name": "Design de Sobrancelhas",
+            "price": 45,
+            "duration": 30,
+            "description": "Design personalizado conforme seu rosto.",
+            "keywords": [
+                "sobrancelha",
+                "design",
+                "limpeza"
+            ]
+        },
+        {
+            "id": "extensao_cilios",
+            "name": "Extensão de Cílios (Clássico)",
+            "price": 180,
+            "duration": 120,
+            "description": "Aplicação de fios sintéticos para um olhar natural e marcante.",
+            "keywords": [
+                "cilios",
+                "extensao",
+                "lash"
+            ]
+        },
+        {
+            "id": "lash_lifting",
+            "name": "Lash Lifting",
+            "price": 120,
+            "duration": 60,
+            "description": "Curvatura e tintura natural dos cílios.",
+            "keywords": [
+                "cilios",
+                "lash",
+                "lifting"
+            ]
+        },
+        {
+            "id": "brow_lamination",
+            "name": "Brow Lamination",
+            "price": 150,
+            "duration": 60,
+            "description": "Alinhamento e volume para sobrancelhas.",
+            "keywords": [
+                "brow",
+                "lamination",
+                "alisamento"
+            ]
+        },
+        {
+            "id": "mentoria_vip",
+            "name": "Mentoria VIP Academy",
+            "price": 997,
+            "duration": 240,
+            "description": "Treinamento exclusivo para profissionais da beleza.",
+            "keywords": [
+                "mentoria",
+                "curso",
+                "vip",
+                "treinamento",
+                "academy"
+            ]
+        }
+    ],
+    "faq": [
+        {
+            "question": "Quanto tempo dura a extensão de cílios?",
+            "answer": "A durabilidade média é de 15 a 20 dias, dependendo dos cuidados e do ciclo natural dos seus fios. Recomendamos manutenção periódica."
+        },
+        {
+            "question": "Dói para fazer os procedimentos?",
+            "answer": "Não! Nossos procedimentos são indolores e focados no seu relaxamento. Muitas clientes até dormem durante a sessão. ✨"
+        },
+        {
+            "question": "Como funcionam os cursos da Academy?",
+            "answer": "Nossos cursos são presenciais e focados em prática. Oferecemos apostila, certificado e suporte pós-curso. Digite *1* e escolha 'Mentoria VIP' para saber mais!"
+        },
+        {
+            "question": "Quais as formas de pagamento?",
+            "answer": "Aceitamos Pix, cartões de crédito e débito. O pagamento é realizado no dia do atendimento."
+        }
+    ],
+    "business_hours": {
+        "start": "09:00",
+        "end": "19:00",
+        "days": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+        ]
+    },
+    "features": {
+        "recurrence_upsell": true,
+        "abandoned_cart": true,
+        "waiting_list": true,
+        "pdf_receipts": true
+    }
+}
+
+

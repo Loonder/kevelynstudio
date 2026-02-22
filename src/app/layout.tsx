@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Cormorant_Garamond, Outfit } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/cn";
-// AJUSTE 1: Importando da pasta 'ui' (Certifique-se que o arquivo está lá!)
-import { SmoothScrolling } from "@/components/ui/smooth-scrolling";
-
+import Preloader from "@/components/Preloader";
+import Providers from "@/components/Providers";
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
   variable: "--font-cormorant",
@@ -20,28 +20,34 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Kevelyn Studio | Lash Design e Sobrancelhas",
-  description: "Studio especializado em Lash Design e Sobrancelhas. Realce sua beleza natural com nossas especialistas de alto padrão.",
-  icons: {
-    icon: "/favicon.png", // Fallback
-    shortcut: "/favicon.png",
-    apple: "/favicon.png",
+  title: {
+    default: "Kevelyn Company | Elite Beauty & Academy",
+    template: "%s | Kevelyn Company"
   },
+  description: "A premier destination for world-class lash artistry, brow mapping, and elite beauty mentorship. Experience the gold standard in beauty.",
+  keywords: ["Lashes", "Brows", "Beauty Academy", "Kevelyn", "Luxury Beauty", "Sao Paulo"],
+  authors: [{ name: "Kevelyn Company" }],
+  creator: "Kevelyn Company",
   openGraph: {
-    title: "Kevelyn Studio | Lash Design e Sobrancelhas",
-    description: "Studio especializado em Lash Design e Sobrancelhas.",
-    url: "https://kevelynstudio.paulomoraes.cloud",
-    siteName: "Kevelyn Studio",
+    type: "website",
+    locale: "pt_BR",
+    url: "https://kevelyn.com.br",
+    title: "Kevelyn Company | Elite Beauty & Academy",
+    description: "Transforming beauty into art. Specialized strategies for lashes, brows, and professional mentorship.",
+    siteName: "Kevelyn Company",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Kevelyn Studio Banner",
+        alt: "Kevelyn Company Elite Beauty",
       },
     ],
-    locale: "pt_BR",
-    type: "website",
+  },
+  icons: {
+    icon: "/favicon.png",
+    shortcut: "/favicon.png",
+    apple: "/favicon.png",
   },
 };
 
@@ -51,20 +57,27 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    // AJUSTE 2: Removi 'data-scroll-behavior' para não brigar com o Lenis
     <html lang="pt-BR">
       <body
         suppressHydrationWarning
         className={cn(
-          "relative min-h-screen font-sans bg-background text-text-primary selection:bg-primary/30 selection:text-white",
+          "relative min-h-screen font-sans bg-background text-text-primary selection:bg-primary/30 selection:text-white flex flex-col",
           cormorant.variable,
           outfit.variable
         )}>
-        <SmoothScrolling>
-          {/* AJUSTE 3: Removi o <main> daqui. O page.tsx já cuida disso. */}
-          {children}
-        </SmoothScrolling>
+        {/* Global Cinematic Noise */}
+        <div className="fixed inset-0 z-[100] pointer-events-none opacity-[0.03] mix-blend-overlay bg-[url('/assets/noise.svg')]"></div>
+
+        <Providers>
+          <main className="flex-1">
+            {children}
+          </main>
+        </Providers>
       </body>
     </html>
   );
 }
+
+
+
+

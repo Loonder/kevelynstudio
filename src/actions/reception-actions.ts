@@ -60,3 +60,9 @@ export async function updateAppointmentStatus(id: string, status: "confirmed" | 
         return { error: "Failed to update status." };
     }
 }
+
+
+
+
+
+

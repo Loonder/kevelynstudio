@@ -1,15 +1,18 @@
-import { db } from "@/lib/db";
-import { services } from "@/db/schema";
+import { supabase } from "@/lib/supabase-client";
 import { GlassCard } from "@/components/ui/glass-card";
 import { LuxuryButton } from "@/components/ui/luxury-button";
 import { ServiceSheet } from "@/components/admin/services/service-sheet";
-import { Plus, Pencil, Trash2, Clock } from "lucide-react";
-import { ServiceActions } from "@/components/admin/services/service-actions"; // Client component for actions
+import { Plus, Clock } from "lucide-react";
+import { ServiceActions } from "@/components/admin/services/service-actions";
+
+const TENANT_ID = process.env.TENANT_ID || 'kevelyn_studio';
 
 export default async function ServicesPage() {
-    const allServices = await db.query.services.findMany({
-        orderBy: (services, { desc }) => [desc(services.createdAt)]
-    });
+    const { data: allServices } = await supabase
+        .from('services')
+        .select('*')
+        .eq('tenant_id', TENANT_ID)
+        .order('created_at', { ascending: false });
 
     return (
         <div className="max-w-[1600px] mx-auto p-8 space-y-8">
@@ -34,7 +37,7 @@ export default async function ServicesPage() {
 
             {/* Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {allServices.map((service) => (
+                {(allServices || []).map((service) => (
                     <GlassCard key={service.id} className="p-6 flex flex-col gap-4 group hover:border-[#D4AF37]/30 transition-all duration-300">
                         <div className="flex justify-between items-start">
                             <div>
@@ -55,16 +58,16 @@ export default async function ServicesPage() {
                         <div className="mt-auto pt-4 border-t border-white/5 flex items-center justify-between">
                             <div className="flex items-center text-white/60 text-xs">
                                 <Clock className="w-3 h-3 mr-1.5" />
-                                {service.durationMinutes} min
+                                {service.duration_minutes} min
                             </div>
                             <span className="text-lg font-medium text-white">
-                                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(service.price / 100)}
+                                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format((service.price || 0) / 100)}
                             </span>
                         </div>
                     </GlassCard>
                 ))}
 
-                {allServices.length === 0 && (
+                {(!allServices || allServices.length === 0) && (
                     <div className="col-span-full h-64 flex flex-col items-center justify-center text-white/30 border border-dashed border-white/10 rounded-xl">
                         <p>Nenhum serviço cadastrado.</p>
                     </div>
@@ -73,3 +76,8 @@ export default async function ServicesPage() {
         </div>
     );
 }
+
+
+
+
+

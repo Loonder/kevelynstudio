@@ -100,3 +100,8 @@ export function CourseLevels({ levels }: CourseLevelsProps) {
         </section>
     );
 }
+
+
+
+
+

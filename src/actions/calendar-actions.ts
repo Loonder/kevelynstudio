@@ -1,9 +1,9 @@
 "use server";
 
-import { db } from "@/lib/db";
-import { appointments, services } from "@/db/schema";
-import { eq, and, or, lt, gt, ne } from "drizzle-orm";
+import { supabase } from "@/lib/supabase-client";
 import { revalidatePath } from "next/cache";
+
+const TENANT_ID = process.env.TENANT_ID || 'kevelyn_studio';
 
 // --- HELPER: Conflict Detection ---
 async function checkOverlap(
@@ -12,94 +12,87 @@ async function checkOverlap(
     endTime: Date,
     excludeAppointmentId?: string
 ) {
-    const conflicts = await db.query.appointments.findFirst({
-        where: and(
-            eq(appointments.professionalId, professionalId),
-            // Overlap logic: (StartA < EndB) AND (EndA > StartB)
-            // SQL: start_time < newEnd AND end_time > newStart
-            and(
-                lt(appointments.startTime, endTime),
-                gt(appointments.endTime, startTime)
-            ),
-            // Exclude current appointment if resizing/moving
-            excludeAppointmentId ? ne(appointments.id, excludeAppointmentId) : undefined,
-            // Only count active appointments
-            ne(appointments.status, 'cancelled')
-        )
-    });
+    let query = supabase
+        .from('appointments')
+        .select('id')
+        .eq('professional_id', professionalId)
+        .lt('start_time', endTime.toISOString())
+        .gt('end_time', startTime.toISOString())
+        .neq('status', 'cancelled')
+        .eq('tenant_id', TENANT_ID);
 
-    return !!conflicts;
+    if (excludeAppointmentId) {
+        query = query.neq('id', excludeAppointmentId);
+    }
+
+    const { data, error } = await query.limit(1);
+
+    if (error) {
+        console.error("Overlap Check Error:", error);
+        return false;
+    }
+
+    return data && data.length > 0;
 }
 
 export async function rescheduleAppointment(
     appointmentId: string,
     newStartTime: Date | string,
-    newEndTime?: Date | string, // Optional now, can be calculated
+    newEndTime?: Date | string,
     professionalId?: string | null
 ) {
     try {
         const start = new Date(newStartTime);
         let end = newEndTime ? new Date(newEndTime) : null;
 
-        // 1. Fetch current appointment to get professional/service details if missing
-        const currentAppt = await db.query.appointments.findFirst({
-            where: eq(appointments.id, appointmentId),
-            with: { service: true }
-        });
+        // 1. Fetch current appointment
+        const { data: currentAppt, error: fetchError } = await supabase
+            .from('appointments')
+            .select('*, services(*)')
+            .eq('id', appointmentId)
+            .single();
 
-        if (!currentAppt) return { success: false, error: "Agendamento não encontrado." };
+        if (fetchError || !currentAppt) return { success: false, error: "Agendamento não encontrado." };
 
-        // 2. Determine Professional ID (New or Existing)
-        const targetProfId = professionalId || currentAppt.professionalId;
+        const targetProfId = professionalId || currentAppt.professional_id;
 
-        // 3. Calculate End Time if not provided (Safety Rule)
         if (!end) {
-            // Ensure we use the service duration
-            const duration = currentAppt.service.durationMinutes || 60; // Default 60 if missing
+            const duration = currentAppt.services?.duration_minutes || 60;
             end = new Date(start.getTime() + duration * 60000);
         }
 
-        // 4. VALIDATION: End must be after Start
         if (end <= start) {
-            return {
-                success: false,
-                error: "Horário de término deve ser após o horário de início."
-            };
+            return { success: false, error: "Horário de término deve ser após o horário de início." };
         }
 
-        // 5. VALIDATION: Cannot schedule in the past
         const now = new Date();
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         const startDay = new Date(start.getFullYear(), start.getMonth(), start.getDate());
         if (startDay < today) {
-            return {
-                success: false,
-                error: "Não é possível agendar no passado."
-            };
+            return { success: false, error: "Não é possível agendar no passado." };
         }
 
-        // 6. SECURITY: Check Overlap
         const hasConflict = await checkOverlap(targetProfId, start, end, appointmentId);
 
         if (hasConflict) {
-            return {
-                success: false,
-                error: "Conflito de horário! A profissional já possui agendamento neste período."
-            };
+            return { success: false, error: "Conflito de horário! A profissional já possui agendamento neste período." };
         }
 
-        // 5. Update DB
-        await db.update(appointments)
-            .set({
-                startTime: start,
-                endTime: end,
-                professionalId: targetProfId,
-                status: 'confirmed' // Auto-confirm on admin move
+        const { error: updateError } = await supabase
+            .from('appointments')
+            .update({
+                start_time: start.toISOString(),
+                end_time: end.toISOString(),
+                professional_id: targetProfId,
+                status: 'confirmed'
             })
-            .where(eq(appointments.id, appointmentId));
+            .eq('id', appointmentId)
+            .eq('tenant_id', TENANT_ID);
+
+        if (updateError) throw updateError;
 
         revalidatePath('/admin/calendar');
-        return { success: true, newEnd: end }; // Return calculated end for UI update
+        return { success: true, newEnd: end };
     } catch (error) {
         console.error("Reschedule Error:", error);
         return { success: false, error: "Erro interno ao reagendar." };
@@ -108,7 +101,13 @@ export async function rescheduleAppointment(
 
 export async function deleteAppointment(appointmentId: string) {
     try {
-        await db.delete(appointments).where(eq(appointments.id, appointmentId));
+        const { error } = await supabase
+            .from('appointments')
+            .delete()
+            .eq('id', appointmentId)
+            .eq('tenant_id', TENANT_ID);
+
+        if (error) throw error;
         revalidatePath('/admin/calendar');
         return { success: true };
     } catch (error) {
@@ -122,9 +121,13 @@ export async function updateAppointmentStatus(
     status: 'confirmed' | 'pending' | 'cancelled' | 'completed' | 'no_show'
 ) {
     try {
-        await db.update(appointments)
-            .set({ status })
-            .where(eq(appointments.id, id));
+        const { error } = await supabase
+            .from('appointments')
+            .update({ status })
+            .eq('id', id)
+            .eq('tenant_id', TENANT_ID);
+
+        if (error) throw error;
 
         revalidatePath('/admin/calendar');
         return { success: true };
@@ -139,69 +142,53 @@ export async function createAppointment(data: {
     professionalId: string;
     serviceId: string;
     startTime: Date | string;
-    endTime?: Date | string; // Optional: if provided from calendar drag, use it instead of calculating
+    endTime?: Date | string;
 }) {
     try {
         const start = new Date(data.startTime);
-
-        // 1. Determine End Time
         let end: Date;
 
         if (data.endTime) {
-            // Use provided endTime from calendar drag
             end = new Date(data.endTime);
         } else {
-            // Calculate from service duration
-            const service = await db.query.services.findFirst({
-                where: eq(services.id, data.serviceId)
-            });
+            const { data: svc, error: svcError } = await supabase
+                .from('services')
+                .select('duration_minutes')
+                .eq('id', data.serviceId)
+                .single();
 
-            if (!service) {
-                return { success: false, error: "Serviço não encontrado." };
-            }
+            if (svcError || !svc) return { success: false, error: "Serviço não encontrado." };
 
-            const duration = service.durationMinutes || 60;
+            const duration = svc.duration_minutes || 60;
             end = new Date(start.getTime() + duration * 60000);
         }
 
-        // 2. VALIDATION: End must be after Start
-        if (end <= start) {
-            return {
-                success: false,
-                error: "Horário de término deve ser após o horário de início."
-            };
-        }
+        if (end <= start) return { success: false, error: "Horário de término deve ser após o horário de início." };
 
-        // 3. VALIDATION: Cannot schedule in the past
         const now = new Date();
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         const startDay = new Date(start.getFullYear(), start.getMonth(), start.getDate());
-        if (startDay < today) {
-            return {
-                success: false,
-                error: "Não é possível agendar no passado."
-            };
-        }
+        if (startDay < today) return { success: false, error: "Não é possível agendar no passado." };
 
-        // 4. CRITICAL: Check Overlap
         const hasConflict = await checkOverlap(data.professionalId, start, end);
 
         if (hasConflict) {
-            return {
-                success: false,
-                error: "Este profissional já possui um atendimento neste horário."
-            };
+            return { success: false, error: "Este profissional já possui um atendimento neste horário." };
         }
 
-        // 4. Insert
-        await db.insert(appointments).values({
-            clientId: data.clientId,
-            professionalId: data.professionalId,
-            serviceId: data.serviceId,
-            startTime: start,
-            endTime: end,
-            status: 'confirmed',
-        });
+        const { error: insertError } = await supabase
+            .from('appointments')
+            .insert({
+                contact_id: data.clientId,
+                professional_id: data.professionalId,
+                service_id: data.serviceId,
+                start_time: start.toISOString(),
+                end_time: end.toISOString(),
+                status: 'confirmed',
+                tenant_id: TENANT_ID
+            });
+
+        if (insertError) throw insertError;
 
         revalidatePath('/admin/calendar');
         return { success: true };
@@ -210,3 +197,7 @@ export async function createAppointment(data: {
         return { success: false, error: "Falha ao criar agendamento." };
     }
 }
+
+
+
+

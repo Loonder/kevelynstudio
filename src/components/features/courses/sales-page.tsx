@@ -36,7 +36,7 @@ export function SalesPage({ course }: SalesPageProps) {
                     </h1>
 
                     <p className="text-white/60 text-lg leading-relaxed max-w-xl">
-                        {course.description || "Domine as técnicas mais avançadas do mercado e transforme sua carreira com este curso exclusivo Kevelyn Studio."}
+                        {course.description || "Domine as técnicas mais avançadas do mercado e transforme sua carreira com este curso exclusivo Kevelyn Company."}
                     </p>
 
                     <div className="flex flex-col sm:flex-row gap-4">
@@ -116,3 +116,8 @@ export function SalesPage({ course }: SalesPageProps) {
         </main>
     );
 }
+
+
+
+
+

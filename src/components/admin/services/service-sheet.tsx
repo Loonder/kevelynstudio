@@ -130,8 +130,6 @@ export function ServiceSheet({ serviceToEdit, trigger, open, onOpenChange }: Ser
                         >
                             <option value="Cílios" className="bg-black">Cílios</option>
                             <option value="Sobrancelhas" className="bg-black">Sobrancelhas</option>
-                            <option value="Labial" className="bg-black">Labial</option>
-                            <option value="Facial" className="bg-black">Facial</option>
                         </select>
                     </div>
 
@@ -155,3 +153,8 @@ export function ServiceSheet({ serviceToEdit, trigger, open, onOpenChange }: Ser
         </Sheet>
     );
 }
+
+
+
+
+

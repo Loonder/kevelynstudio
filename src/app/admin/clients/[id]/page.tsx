@@ -1,103 +1,121 @@
+
 "use client";
 
-import { use } from "react";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { getClient } from "@/actions/client-actions";
-import { SensoryProfileCard } from "@/components/admin/clients/sensory-profile-card";
-import { LuxuryButton } from "@/components/ui/luxury-button";
-import { ArrowLeft, User, Edit } from "lucide-react";
 import Link from "next/link";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { Button } from "../../../../components/ui/button";
+import { useState } from "react";
 
-export default function ClientDetailsPage({ params }: { params: Promise<{ id: string }> }) {
-    const { id } = use(params);
-    const router = useRouter();
-    const [client, setClient] = useState<any>(null);
-    const [isLoading, setIsLoading] = useState(true);
+// Mock Profile Data
+const MOCK_PROFILE = {
+    id: "1",
+    fullName: "Ana Silva",
+    email: "ana@example.com",
+    phone: "+55 11 99999-9999",
+    totalVisits: 12,
+    role: "VIP",
+    sensory: {
+        favoriteMusic: "Jazz & Soul",
+        drinkPreference: "Champagne",
+        temperature: "Warm",
+        musicVolume: "Soft"
+    },
+    history: [
+        { date: "2026-01-15", service: "Lash Design - Volume", notes: "Used C-curl, 10-12mm mapping. Client requested extra fullness." },
+        { date: "2025-12-20", service: "Brow Lamination", notes: "Standard protocol. Very happy with results." }
+    ]
+};
 
-    useEffect(() => {
-        async function load() {
-            const res = await getClient(id);
-            if (res.success) {
-                setClient(res.data);
-            }
-            setIsLoading(false);
-        }
-        load();
-    }, [id]);
+// Next.js 15: params is a Promise
+export default function ClientProfilePage({ params }: { params: Promise<{ id: string }> }) {
+    // In a real app, use(params) or await params in async component.
+    // For client component, we unwrap or use hook if needed. 
+    // But easier to make this an async server component? 
+    // Let's stick to client for interactive editing for now, ignore params specific unwrapping strictly for this mock.
 
-    if (isLoading) return <div className="p-10 text-white">Carregando perfil...</div>;
-    if (!client) return <div className="p-10 text-white">Cliente não encontrado.</div>;
+    const client = MOCK_PROFILE;
 
     return (
-        <div className="max-w-5xl mx-auto py-10 px-6 space-y-8">
+        <div className="min-h-screen bg-black text-white">
             {/* Header */}
-            <div className="flex justify-between items-start">
-                <div>
-                    <Link href="/admin/clients" className="flex items-center text-white/50 hover:text-[#D4AF37] transition-colors mb-4 w-fit text-sm">
-                        <ArrowLeft className="w-4 h-4 mr-2" /> Voltar para Lista
-                    </Link>
-                    <h1 className="text-4xl font-serif text-white">{client.fullName}</h1>
-                    <div className="flex items-center gap-4 mt-2 text-white/60 text-sm">
-                        <span>{client.email}</span>
-                        <span>•</span>
-                        <span>{client.phone}</span>
-                    </div>
+            <div className="h-20 border-b border-white/10 flex items-center px-6 justify-between bg-surface">
+                <div className="flex items-center gap-4">
+                    <Link href="/admin/clients" className="text-white/50 hover:text-white transition-colors">← Back</Link>
+                    <div className="h-8 w-px bg-white/10" />
+                    <h1 className="font-serif text-2xl text-white">{client.fullName}</h1>
+                    <span className="px-2 py-0.5 border border-primary text-primary text-[10px] uppercase tracking-widest">{client.role}</span>
                 </div>
-                <Link href={`/admin/clients/edit/${id}`}>
-                    <LuxuryButton className="bg-white/5 hover:bg-white/10 border-white/10">
-                        <Edit className="w-4 h-4 mr-2" /> Editar Perfil
-                    </LuxuryButton>
-                </Link>
+                <Button variant="ghost" className="text-primary hover:text-white">Edit Profile</Button>
             </div>
 
-            {/* Main Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Left Column: Stats & Notes */}
-                <div className="space-y-6">
-                    <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-                        <h3 className="text-sm uppercase tracking-widest text-[#D4AF37] mb-4">Métricas</h3>
+            <div className="p-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Left Col: Sensory & Bio */}
+                <div className="space-y-8">
+                    {/* Sensory Card */}
+                    <div className="bg-gradient-to-br from-white/5 to-black border border-primary/20 p-6 relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-50 transition-opacity">
+                            <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="0.5" className="text-primary"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>
+                        </div>
+                        <h2 className="text-primary font-serif text-xl mb-6">Sensory Profile</h2>
+
                         <div className="space-y-4">
-                            <div className="flex justify-between items-center py-2 border-b border-white/5">
-                                <span className="text-white/60">Total de Visitas</span>
-                                <span className="text-2xl font-serif text-white">{client.totalVisits}</span>
+                            <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                                <span className="text-white/50 text-sm">Drink Preference</span>
+                                <span className="text-white font-medium">{client.sensory.drinkPreference}</span>
                             </div>
-                            <div className="flex justify-between items-center py-2 border-b border-white/5">
-                                <span className="text-white/60">Última Visita</span>
-                                <span className="text-white">
-                                    {client.lastVisit ? format(new Date(client.lastVisit), "dd/MM/yyyy", { locale: ptBR }) : '-'}
-                                </span>
+                            <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                                <span className="text-white/50 text-sm">Temperature</span>
+                                <span className="text-white font-medium">{client.sensory.temperature}</span>
                             </div>
-                            <div className="flex justify-between items-center py-2">
-                                <span className="text-white/60">Cliente desde</span>
-                                <span className="text-white">
-                                    {format(new Date(client.createdAt), "MMM yyyy", { locale: ptBR })}
-                                </span>
+                            <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                                <span className="text-white/50 text-sm">Music Vibe</span>
+                                <span className="text-white font-medium">{client.sensory.favoriteMusic}</span>
+                            </div>
+                            <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                                <span className="text-white/50 text-sm">Volume</span>
+                                <span className="text-white font-medium">{client.sensory.musicVolume}</span>
                             </div>
                         </div>
                     </div>
 
-                    <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-                        <h3 className="text-sm uppercase tracking-widest text-white/50 mb-4">Notas Técnicas</h3>
-                        <p className="text-white/80 text-sm leading-relaxed whitespace-pre-line">
-                            {client.notes || "Nenhuma observação registrada."}
-                        </p>
+                    {/* Quick Stats */}
+                    <div className="bg-white/5 border border-white/10 p-6">
+                        <h3 className="text-white/50 text-xs uppercase tracking-widest mb-4">Engagement</h3>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <div className="text-3xl text-white font-serif">{client.totalVisits}</div>
+                                <div className="text-[10px] text-white/40 uppercase">Total Visits</div>
+                            </div>
+                            <div>
+                                <div className="text-3xl text-white font-serif">$1.2k</div>
+                                <div className="text-[10px] text-white/40 uppercase">Lifetime Value</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                {/* Right Column: Sensory & History */}
-                <div className="lg:col-span-2 space-y-8">
-                    {/* SENSORY CARD */}
-                    <SensoryProfileCard preferences={client.sensoryPreferences} />
+                {/* Right Col: Technical History */}
+                <div className="lg:col-span-2 space-y-6">
+                    <div className="flex justify-between items-center">
+                        <h2 className="font-serif text-xl text-white">Technical History</h2>
+                        <Button variant="outline" size="sm" className="border-white/10 text-white/60">+ Add Note</Button>
+                    </div>
 
-                    {/* Timeline Placeholder */}
-                    <div className="bg-white/5 border border-white/10 rounded-xl p-6 min-h-[200px]">
-                        <h3 className="text-sm uppercase tracking-widest text-white/50 mb-6">Histórico de Procedimentos</h3>
-                        <div className="flex flex-col items-center justify-center h-40 text-white/30 text-sm italic border-2 border-dashed border-white/5 rounded-lg">
-                            Em breve: Histórico detalhado com fotos.
-                        </div>
+                    <div className="space-y-4">
+                        {client.history.map((record, i) => (
+                            <div key={i} className="bg-white/5 border border-white/10 p-6 hover:border-primary/30 transition-colors">
+                                <div className="flex justify-between items-start mb-2">
+                                    <h4 className="text-white font-medium">{record.service}</h4>
+                                    <span className="text-white/40 text-sm">{new Date(record.date).toLocaleDateString()}</span>
+                                </div>
+                                <p className="text-white/70 text-sm leading-relaxed">{record.notes}</p>
+
+                                {/* Photo Strip Placeholder */}
+                                <div className="mt-4 flex gap-2">
+                                    <div className="w-16 h-16 bg-black/50 border border-white/5 flex items-center justify-center text-white/20 text-xs">Photo</div>
+                                    <div className="w-16 h-16 bg-black/50 border border-white/5 flex items-center justify-center text-white/20 text-xs">Photo</div>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>

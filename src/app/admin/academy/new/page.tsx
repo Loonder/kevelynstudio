@@ -18,8 +18,11 @@ export default function NewCoursePage() {
 
         setIsCreating(true);
         try {
-            const result = await createCourse(title);
-            if (result.success && result.id) {
+            const result = await createCourse({
+                title: title,
+                price: 0 // Default price for quick creation
+            });
+            if (result.success) {
                 toast.success("Curso criado!");
                 router.push(`/admin/academy/${result.id}`);
             } else {
@@ -53,3 +56,8 @@ export default function NewCoursePage() {
         </div>
     );
 }
+
+
+
+
+

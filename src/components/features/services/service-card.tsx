@@ -63,3 +63,8 @@ export function ServiceCard({ service, index }: { service: Service, index: numbe
         </motion.div>
     );
 }
+
+
+
+
+

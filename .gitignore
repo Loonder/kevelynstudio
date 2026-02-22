@@ -1,8 +1,6 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
 # dependencies
-/node_modules
-/.pnp
+node_modules
+.pnp
 .pnp.*
 .yarn/*
 !.yarn/patches
@@ -10,28 +8,33 @@
 !.yarn/releases
 !.yarn/versions
 
-# testing
-/coverage
-
 # next.js
 /.next/
 /out/
 
-# production
+# production/build
 /build
+dist
 
-# misc
-.DS_Store
-*.pem
-
-# debug
+# logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+startup_error.log
+test-output.txt
+verify_output.txt
+result.log
+run_log.txt
 
-# env files (can opt-in for committing if needed)
-.env*
+# env files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
 
 # vercel
 .vercel
@@ -40,31 +43,46 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# --- LOCAL/CUSTOM IGNORES ---
+# OS files
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+desktop.ini
 
-# Logs and Error dumps
-*.log
-tsc_errors*
-lint-*
-lint-report*
+# IDE files
+.vscode
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 
-# Backups
-*.zip
-*_backup*
+# Bot Specific
+.wwebjs_auth
+.wwebjs_cache
+kevelyn_beauty.lock
+session.json
+google-credentials.json
+bot-whatsapp/saas-core/google-credentials.json
 
-# Database Scratch Files & SQL Dumps
-supabase_*.sql
+# Database
 *.sqlite
-dump.rdb
+*.db-journal
+*.db-shm
+*.db-wal
+sqlite.db
 
-# One-off scripts (keep src/scripts, ignore root scripts)
-apply-schema.ts
-check-db.ts
-test-connection.ts
-seed.ts
+# Test/Scratch scripts
+manual-test*.js
+test-*.ts
+check-*.ts
+cleanup*.js
+seed*.ts
+apply-*.ts
+*.bak
 
-# Transient Documentation
-RESTART_INSTRUCTIONS.md
-DATABASE_RESET_GUIDE.md
-DEBUG_CONNECTION.md
-# Keeping README.md and PROJECT_OVERVIEW.md as they are usually valuable for the repo
+# Antigravity/Agent meta
+.antigravity/
+.gemini/

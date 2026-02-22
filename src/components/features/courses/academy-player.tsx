@@ -188,3 +188,8 @@ export function AcademyPlayer({ courseId, courseTitle, description, modules = []
         </div>
     );
 }
+
+
+
+
+

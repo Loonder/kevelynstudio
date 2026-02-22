@@ -77,3 +77,8 @@ export function CourseHero({ title, subtitle, videoUrl }: CourseHeroProps) {
         </section>
     );
 }
+
+
+
+
+

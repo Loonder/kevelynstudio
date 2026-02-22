@@ -1,10 +1,10 @@
 "use server";
 
-import { db } from "@/lib/db";
-import { services } from "@/db/schema";
+import { supabase } from "@/lib/supabase-client";
 import { revalidatePath } from "next/cache";
-import { eq } from "drizzle-orm";
 import { z } from "zod";
+
+const TENANT_ID = process.env.TENANT_ID || 'kevelyn_studio';
 
 const serviceSchema = z.object({
     title: z.string().min(1, "Nome é obrigatório"),
@@ -27,14 +27,19 @@ export async function createService(data: Omit<ServiceInput, 'id'>) {
     const { title, description, price, durationMinutes, category, imageUrl } = result.data;
 
     try {
-        await db.insert(services).values({
-            title,
-            description: description || "",
-            price,
-            durationMinutes,
-            category,
-            imageUrl: imageUrl || null,
-        });
+        const { error } = await supabase
+            .from('services')
+            .insert({
+                title,
+                description: description || "",
+                price,
+                duration_minutes: durationMinutes,
+                category,
+                image_url: imageUrl || null,
+                tenant_id: TENANT_ID
+            });
+
+        if (error) throw error;
 
         revalidatePath("/admin/services");
         revalidatePath("/admin/calendar");
@@ -55,28 +60,40 @@ export async function updateService(id: string, data: Omit<ServiceInput, 'id'>) 
     const { title, description, price, durationMinutes, category, imageUrl } = result.data;
 
     try {
-        await db.update(services)
-            .set({
+        const { error } = await supabase
+            .from('services')
+            .update({
                 title,
                 description: description || "",
                 price,
-                durationMinutes,
+                duration_minutes: durationMinutes,
                 category,
-                imageUrl: imageUrl || null,
+                image_url: imageUrl || null,
             })
-            .where(eq(services.id, id));
+            .eq('id', id)
+            .eq('tenant_id', TENANT_ID);
+
+        if (error) throw error;
 
         revalidatePath("/admin/services");
         revalidatePath("/admin/calendar");
         return { success: true };
     } catch (error) {
+        console.error("Update Service Error:", error);
         return { error: "Erro ao atualizar serviço." };
     }
 }
 
 export async function deleteService(id: string) {
     try {
-        await db.delete(services).where(eq(services.id, id));
+        const { error } = await supabase
+            .from('services')
+            .delete()
+            .eq('id', id)
+            .eq('tenant_id', TENANT_ID);
+
+        if (error) throw error;
+
         revalidatePath("/admin/services");
         revalidatePath("/admin/calendar");
         return { success: true };
@@ -87,12 +104,27 @@ export async function deleteService(id: string) {
 
 export async function getServicesForBooking() {
     try {
-        const result = await db.query.services.findMany({
-            orderBy: (services, { asc }) => [asc(services.displayOrder), asc(services.title)]
-        });
-        return result;
+        const { data, error } = await supabase
+            .from('services')
+            .select('*')
+            .eq('tenant_id', TENANT_ID)
+            .order('display_order', { ascending: true })
+            .order('title', { ascending: true });
+
+        if (error) throw error;
+
+        return (data || []).map(s => ({
+            ...s,
+            durationMinutes: s.duration_minutes,
+            imageUrl: s.image_url
+        }));
     } catch (error) {
         console.error("Get Services For Booking Error:", error);
         return [];
     }
 }
+
+
+
+
+
