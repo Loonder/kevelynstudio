@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Star, ChevronLeft, ChevronRight, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,23 +21,23 @@ export default function TestimonialCarousel({ testimonials }: TestimonialCarouse
     const [direction, setDirection] = useState(0);
     const [isAutoPlaying, setIsAutoPlaying] = useState(true);
 
+    const handleNext = useCallback(() => {
+        setDirection(1);
+        setCurrentIndex((prev) => (prev + 1) % testimonials.length);
+    }, [testimonials.length]);
+
+    const handlePrev = useCallback(() => {
+        setDirection(-1);
+        setCurrentIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
+    }, [testimonials.length]);
+
     useEffect(() => {
         if (!isAutoPlaying) return;
         const timer = setInterval(() => {
             handleNext();
         }, 5000);
         return () => clearInterval(timer);
-    }, [currentIndex, isAutoPlaying]);
-
-    const handleNext = () => {
-        setDirection(1);
-        setCurrentIndex((prev) => (prev + 1) % testimonials.length);
-    };
-
-    const handlePrev = () => {
-        setDirection(-1);
-        setCurrentIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
-    };
+    }, [isAutoPlaying, handleNext]);
 
     const variants = {
         enter: (direction: number) => ({
@@ -73,15 +73,17 @@ export default function TestimonialCarousel({ testimonials }: TestimonialCarouse
                 <AnimatePresence initial={false} custom={direction}>
                     <motion.div
                         key={currentIndex}
-                        custom={direction}
-                        variants={variants}
-                        initial="enter"
-                        animate="center"
-                        exit="exit"
-                        transition={{
-                            x: { type: "spring", stiffness: 300, damping: 30 },
-                            opacity: { duration: 0.3 }
-                        }}
+                        {...({
+                            custom: direction,
+                            variants: variants,
+                            initial: "enter",
+                            animate: "center",
+                            exit: "exit",
+                            transition: {
+                                x: { type: "spring", stiffness: 300, damping: 30 },
+                                opacity: { duration: 0.3 }
+                            }
+                        } as any)}
                         className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 md:p-8"
                     >
                         <div className="flex gap-1 mb-6">
